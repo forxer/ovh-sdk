@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OvhSdk;
 
 use OvhSdk\Enums\Region;
+use OvhSdk\Exceptions\OvhException;
 use OvhSdk\Requests\Generic\GenericJsonRequest;
 use OvhSdk\Requests\Generic\GenericRequest;
 use OvhSdk\Support\SystemClock;
@@ -14,9 +15,13 @@ use Saloon\Contracts\Authenticator;
 use Saloon\Enums\Method;
 use Saloon\Http\Connector;
 use Saloon\Http\Response;
+use Saloon\Traits\Plugins\AlwaysThrowOnErrors;
+use Throwable;
 
 final class Ovh extends Connector
 {
+    use AlwaysThrowOnErrors;
+
     public function __construct(
         public readonly Region $region,
         Authenticator $credentials,
@@ -58,6 +63,11 @@ final class Ovh extends Connector
     public function delete(string $path): Response
     {
         return $this->send(new GenericRequest(Method::DELETE, $path));
+    }
+
+    public function getRequestException(Response $response, ?Throwable $senderException): Throwable
+    {
+        return OvhException::fromResponse($response, $senderException);
     }
 
     /**
