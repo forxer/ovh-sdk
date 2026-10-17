@@ -6,6 +6,7 @@ namespace OvhSdk;
 
 use OvhSdk\Enums\Region;
 use OvhSdk\Exceptions\OvhException;
+use OvhSdk\Requests\Auth\GetServerTime;
 use OvhSdk\Requests\Generic\GenericJsonRequest;
 use OvhSdk\Requests\Generic\GenericRequest;
 use OvhSdk\Support\SystemClock;
@@ -21,6 +22,10 @@ use Throwable;
 final class Ovh extends Connector
 {
     use AlwaysThrowOnErrors;
+
+    private const int TIME_DELTA_TTL = 3600;
+
+    private ?int $timeDelta = null;
 
     public function __construct(
         public readonly Region $region,
@@ -63,6 +68,32 @@ final class Ovh extends Connector
     public function delete(string $path): Response
     {
         return $this->send(new GenericRequest(Method::DELETE, $path));
+    }
+
+    /**
+     * Seconds to add to the local clock to get the OVHcloud server time.
+     *
+     * Computed once per instance, shared through the PSR-16 cache when one is given.
+     */
+    public function timeDelta(): int
+    {
+        if ($this->timeDelta !== null) {
+            return $this->timeDelta;
+        }
+
+        $key = 'ovh-sdk.time-delta.'.$this->region->value;
+        $cached = $this->cache?->get($key);
+
+        if (\is_int($cached)) {
+            return $this->timeDelta = $cached;
+        }
+
+        /** @var int $serverTime */
+        $serverTime = $this->send(new GetServerTime)->dto();
+        $delta = $serverTime - $this->clock->now()->getTimestamp();
+        $this->cache?->set($key, $delta, self::TIME_DELTA_TTL);
+
+        return $this->timeDelta = $delta;
     }
 
     public function getRequestException(Response $response, ?Throwable $senderException): Throwable
