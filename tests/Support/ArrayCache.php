@@ -18,7 +18,7 @@ final class ArrayCache implements CacheInterface
 
     public function __construct(?ClockInterface $clock = null)
     {
-        $this->clock = $clock ?? new SystemClock;
+        $this->clock = $clock ?? new SystemClock();
     }
 
     public function get(string $key, mixed $default = null): mixed

@@ -29,6 +29,6 @@ final class GetServerTime extends OvhRequest
 
     protected function defaultAuth(): Authenticator
     {
-        return new NullAuthenticator;
+        return new NullAuthenticator();
     }
 }

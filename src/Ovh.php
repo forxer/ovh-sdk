@@ -37,7 +37,7 @@ final class Ovh extends Connector
         public readonly Region $region,
         Authenticator $credentials,
         public readonly ?CacheInterface $cache = null,
-        public readonly ClockInterface $clock = new SystemClock,
+        public readonly ClockInterface $clock = new SystemClock(),
     ) {
         $this->authenticate($credentials);
     }
@@ -100,7 +100,7 @@ final class Ovh extends Connector
         }
 
         /** @var int $serverTime */
-        $serverTime = $this->send(new GetServerTime)->dto();
+        $serverTime = $this->send(new GetServerTime())->dto();
         $delta = $serverTime - $this->clock->now()->getTimestamp();
         $this->cache?->set($key, $delta, self::TIME_DELTA_TTL);
 

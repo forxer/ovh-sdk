@@ -20,7 +20,7 @@ final class DomainResource extends Resource
     public function ids(): array
     {
         /** @var list<string> */
-        return $this->connector->send(new ListDomains)->dto();
+        return $this->connector->send(new ListDomains())->dto();
     }
 
     /**

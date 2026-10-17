@@ -26,7 +26,7 @@ function ovh(
 ): Ovh {
     $ovh = new Ovh(
         $region,
-        $credentials ?? new NullAuthenticator,
+        $credentials ?? new NullAuthenticator(),
         $cache,
         $clock ?? new FrozenClock(new DateTimeImmutable('@1700000000')),
     );

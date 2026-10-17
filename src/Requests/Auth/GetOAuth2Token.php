@@ -50,6 +50,6 @@ final class GetOAuth2Token extends Request implements HasBody
 
     protected function defaultAuth(): Authenticator
     {
-        return new NullAuthenticator;
+        return new NullAuthenticator();
     }
 }
