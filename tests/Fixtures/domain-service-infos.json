@@ -1,0 +1,21 @@
+{
+    "domain": "example.com",
+    "expiration": "2027-03-14",
+    "creation": "2019-03-14",
+    "engagedUpTo": null,
+    "renew": {
+        "automatic": true,
+        "deleteAtExpiration": false,
+        "forced": false,
+        "manualPayment": null,
+        "period": null
+    },
+    "renewalType": "automaticV2016",
+    "status": "ok",
+    "serviceId": 123456,
+    "canDeleteAtExpiration": true,
+    "possibleRenewPeriod": [12],
+    "contactAdmin": "XX1234-OVH",
+    "contactBilling": "XX1234-OVH",
+    "contactTech": "XX1234-OVH"
+}

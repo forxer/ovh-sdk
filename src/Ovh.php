@@ -14,6 +14,7 @@ use OvhSdk\Requests\Auth\GetServerTime;
 use OvhSdk\Requests\Auth\RequestCredential;
 use OvhSdk\Requests\Generic\GenericJsonRequest;
 use OvhSdk\Requests\Generic\GenericRequest;
+use OvhSdk\Resources\DomainResource;
 use OvhSdk\Support\SystemClock;
 use Psr\Clock\ClockInterface;
 use Psr\SimpleCache\CacheInterface;
@@ -73,6 +74,11 @@ final class Ovh extends Connector
     public function delete(string $path): Response
     {
         return $this->send(new GenericRequest(Method::DELETE, $path));
+    }
+
+    public function domain(): DomainResource
+    {
+        return new DomainResource($this);
     }
 
     /**

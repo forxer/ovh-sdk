@@ -1,0 +1,39 @@
+{
+    "domain": "example.com",
+    "expirationDate": "2027-03-14T00:00:00+01:00",
+    "renewalDate": "2027-02-12T00:00:00+01:00",
+    "renewalState": "automatic_renew",
+    "state": "ok",
+    "suspensionState": "not_suspended",
+    "nameServerType": "hosted",
+    "nameServers": [
+        {
+            "id": 1,
+            "nameServer": "dns200.anycast.me",
+            "ipv4": null,
+            "ipv6": null,
+            "nameServerType": "hosted"
+        },
+        {
+            "id": 2,
+            "nameServer": "ns200.anycast.me",
+            "ipv4": null,
+            "ipv6": null,
+            "nameServerType": "hosted"
+        }
+    ],
+    "whoisOwner": "XX1234-OVH",
+    "lastUpdate": "2026-09-01T10:00:00+02:00",
+    "serviceId": 123456,
+    "offer": "gold",
+    "dnssecState": "disabled",
+    "transferLockStatus": "locked",
+    "owoSupported": true,
+    "iam": {
+        "id": "8a3a4f0e-5b1c-4a7e-9d2f-1c0b6e7a9f31",
+        "urn": "urn:v1:eu:resource:domain:example.com",
+        "displayName": null,
+        "tags": null,
+        "state": null
+    }
+}
