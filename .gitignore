@@ -1,4 +1,5 @@
 /.phpunit.cache
 /.rector_cache
+/reference
 /vendor
 composer.lock
