@@ -1,0 +1,62 @@
+{
+    "name": "forxer/ovh-sdk",
+    "description": "An unofficial, modern PHP SDK for the OVHcloud API, built on Saloon, with Laravel integration.",
+    "homepage": "https://github.com/forxer/ovh-sdk",
+    "keywords": [
+        "ovh",
+        "ovhcloud",
+        "api",
+        "sdk",
+        "saloon",
+        "laravel"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Vincent Garnier",
+            "email": "forxer@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/forxer/ovh-sdk/issues",
+        "email": "forxer@gmail.com"
+    },
+    "require": {
+        "php": "^8.4",
+        "saloonphp/saloon": "^4.5"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.32",
+        "pestphp/pest": "^5.3",
+        "phpstan/phpstan": "^2.3",
+        "rector/rector": "^2.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "OvhSdk\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        },
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "scripts": {
+        "lint": "pint --test",
+        "fix": "pint",
+        "analyse": "phpstan analyse",
+        "refactor": "rector",
+        "test": "pest",
+        "check": ["@lint", "@analyse", "@test"]
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
