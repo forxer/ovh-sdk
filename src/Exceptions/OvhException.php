@@ -52,6 +52,9 @@ class OvhException extends RequestException
     /**
      * Read the "class" and "message" fields of the error body, ignoring anything that is not a string.
      *
+     * Without "message", the OAuth2 error fields (RFC 6749, section 5.2) stand in for it: "error_description",
+     * then "error", when they are non-empty strings.
+     *
      * @return array{class?: string, message?: string}
      */
     private static function readBody(Response $response): array
@@ -72,6 +75,16 @@ class OvhException extends RequestException
         foreach (['class', 'message'] as $key) {
             if (isset($body[$key]) && \is_string($body[$key])) {
                 $fields[$key] = $body[$key];
+            }
+        }
+
+        if (! isset($fields['message'])) {
+            foreach (['error_description', 'error'] as $key) {
+                if (isset($body[$key]) && \is_string($body[$key]) && $body[$key] !== '') {
+                    $fields['message'] = $body[$key];
+
+                    break;
+                }
             }
         }
 

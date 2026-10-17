@@ -63,11 +63,18 @@ it('shares the token through the PSR-16 cache', function () {
     expect(sentRequest($second, GenericRequest::class)->headers()->get('Authorization'))->toBe('Bearer tok-1');
 });
 
-it('turns a refused token request into an AuthenticationException', function () {
-    $ovh = ovh([GetOAuth2Token::class => MockResponse::make(['error' => 'invalid_client'], 401)], new ServiceAccount('client-id', 'bad-secret'));
+it('turns a refused token request into an AuthenticationException', function (int $status, array $body, string $message) {
+    $ovh = ovh([GetOAuth2Token::class => MockResponse::make($body, $status)], new ServiceAccount('client-id', 'bad-secret'));
 
-    expect(fn () => $ovh->get('/me'))->toThrow(AuthenticationException::class);
-});
+    expect(fn () => $ovh->get('/me'))->toThrow(function (AuthenticationException $e) use ($status, $message) {
+        expect($e->getMessage())->toBe($message)
+            ->and($e->getStatus())->toBe($status);
+    });
+})->with([
+    'wrong credentials, as answered by OVHcloud' => [400, ['error' => 'invalid_client'], 'invalid_client'],
+    'unauthorized' => [401, ['error' => 'invalid_client'], 'invalid_client'],
+    'with a description' => [400, ['error' => 'invalid_client', 'error_description' => 'Client authentication failed'], 'Client authentication failed'],
+]);
 
 it('neither signs nor syncs the clock in OAuth2 mode', function () {
     $ovh = ovh([GetOAuth2Token::class => tokenResponse(), GenericRequest::class => MockResponse::make([])], new ServiceAccount('client-id', 'client-secret'));

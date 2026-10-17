@@ -38,7 +38,7 @@ OVHcloud documents its error body as:
 
 | Member | Type | Content |
 |---|---|---|
-| `getMessage()` | `string` | the `message` field of the body, or `HTTP {status}` (for example `HTTP 502`) when there is none |
+| `getMessage()` | `string` | the `message` field of the body; without it, the OAuth2 `error_description` field, or else `error`; `HTTP {status}` (for example `HTTP 502`) when there is none of them |
 | `errorClass` | `?string` | the `class` field of the body, for example `Client::Forbidden` |
 | `queryId` | `?string` | the `X-Ovh-QueryId` response header, when present |
 | `getStatus()` | `int` | the HTTP status |
@@ -77,7 +77,7 @@ try {
 
 ### OAuth2 token errors
 
-The token request of a service account goes through the same connector, so its errors are `OvhException`s too. For wrong client credentials, OVHcloud answers `400` with a body like `{"error": "invalid_client"}`: the result is a `BadRequestException` with the message `HTTP 400`, the body holding no `message` field. A token response without `access_token` or `expires_in` throws a `RuntimeException`.
+The token request of a service account goes through the same connector, so its errors are `OvhException`s too, with one difference: a `400` or a `401` from the token endpoint throws an `AuthenticationException`. For wrong client credentials, OVHcloud answers `400` with a body like `{"error": "invalid_client"}`, the OAuth2 error format (RFC 6749, section 5.2): the result is an `AuthenticationException` whose message is the `error_description` field of the body, or else its `error` field, here `invalid_client`. A token response without `access_token` or `expires_in` throws a `RuntimeException`.
 
 Other exceptions
 ----------------
