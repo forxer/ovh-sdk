@@ -31,4 +31,9 @@ final class ZoneResource extends Resource
     {
         $this->connector->send(new RefreshZone($this->zoneName));
     }
+
+    public function records(): RecordsResource
+    {
+        return new RecordsResource($this->connector, $this->zoneName);
+    }
 }
