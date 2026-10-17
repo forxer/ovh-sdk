@@ -132,7 +132,7 @@ The SDK uses the OAuth2 client credentials flow described in the official guide 
 | `Region::Ca` | `https://ca.ovh.com/auth/oauth2/token` |
 | `Region::Us` | `https://us.ovhcloud.com/auth/oauth2/token` |
 
-The EU and CA endpoints come from the official guide. The US endpoint comes from the OVHcloud US support site and is not confirmed by the official documentation, which only lists EU and CA; it does answer like the two others.
+The EU and CA endpoints come from the official guide. The US endpoint comes from the OVHcloud US support site and is not confirmed by the official documentation, which only lists EU and CA; a probe request to that endpoint, made on 2026-10-17, answers like the other two.
 
 ### Getting a service account
 

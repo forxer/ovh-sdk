@@ -60,19 +60,19 @@ Every call starts from the connector, `OvhSdk\Ovh`:
 use OvhSdk\Enums\RecordType;
 
 $ovh->domain()->ids();                                   // list<string>, one call
-$ovh->domain()->list();                                  // list<Domain>, one call per domain
+$ovh->domain()->list();                                  // list<Domain>, the list call plus one per domain
 $ovh->domain()->get('example.com');                      // Domain
 $ovh->domain()->serviceInfos('example.com');             // ServiceInfos
 
 $ovh->domain()->zones()->ids();                          // list<string>, one call
-$ovh->domain()->zones()->list();                         // list<Zone>, one call per zone
+$ovh->domain()->zones()->list();                         // list<Zone>, the list call plus one per zone
 
 $zone = $ovh->domain()->zone('example.com');
 $zone->get();                                            // Zone
 $zone->refresh();                                        // applies the pending changes
 
 $zone->records()->ids();                                 // list<int>, one call
-$zone->records()->list();                                // list<Record>, one call per record
+$zone->records()->list();                                // list<Record>, the list call plus one per record
 $zone->records()->get(42);                               // Record
 $zone->records()->create(RecordType::A, '203.0.113.10', 'app');
 $zone->records()->update(42, target: '203.0.113.20');

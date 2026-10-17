@@ -137,7 +137,7 @@ $mockClient->assertSent(fn (Request $request) => $request instanceof CreateRecor
     && $request->target === '203.0.113.10');
 ```
 
-The request classes expose their arguments as public read-only properties (`$request->domain`, `$request->zoneName`, `$request->target`...), which the closures can check.
+The typed requests (every request class except `Generic\GenericRequest` and `Generic\GenericJsonRequest`) expose their arguments as public read-only properties (`$request->domain`, `$request->zoneName`, `$request->target`...), which the closures can check. `Dns\UpdateRecord` exposes the fields it sends in `$request->changes`, for example `['target' => '203.0.113.20']`.
 
 ### Freezing the time
 
@@ -179,7 +179,8 @@ Ovh::fake([
     ListDomains::class => MockResponse::make([]),
 ]);
 
-// Ovh::domain()->ids() now throws a ServerException, raised by the clock synchronisation.
+// The clock synchronisation fails before ListDomains is sent.
+expect(fn () => Ovh::domain()->ids())->toThrow(ServerException::class);
 ```
 
 ### What Ovh::fake() needs

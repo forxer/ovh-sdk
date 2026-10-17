@@ -42,7 +42,7 @@ The list routes of the `/v1` API only return identifiers. The SDK follows the sa
 
 `list()` sends the per element calls in parallel, through a Saloon pool, five at a time. It returns the DTOs in the order of the identifiers. When a call fails, `list()` waits for the others, then throws the exception of the first failing identifier in the list: it never returns a partial list.
 
-When only a few elements are needed, prefer `ids()` followed by `get()` on the chosen ones. Knowing the expiration and the renewal mode of every domain costs `list()` plus one `serviceInfos()` per domain.
+When only a few elements are needed, prefer `ids()` followed by `get()` on the chosen ones. `Domain` already holds the expiration date (`expirationDate`) and the renewal state (`renewalState`); the renewal settings (`renew`) and the renewal type (`renewalType`) are in `ServiceInfos`, at the cost of one more `serviceInfos()` call per domain.
 
 Domain
 ------

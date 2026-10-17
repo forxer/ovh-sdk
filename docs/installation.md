@@ -58,7 +58,7 @@ The connector is a Saloon `Connector`: Saloon's own features (mock client, middl
 | `Region::Ca` | `https://api.ca.ovhcloud.com` |
 | `Region::Us` | `https://api.us.ovhcloud.com` |
 
-On a region, `apiUrl()` gives the API host and `oauth2TokenUrl()` the OAuth2 token endpoint (`Region::Eu->apiUrl()` for example) (see [Authentication](./authentication.md)). The resources of the SDK target the `/v1` branch of the API; the generic calls can also reach `/v2` (see the [overview](./_index.md)).
+On a region, `apiUrl()` gives the API host and `oauth2TokenUrl()` the OAuth2 token endpoint, `Region::Eu->apiUrl()` for example (see [Authentication](./authentication.md)). The resources of the SDK target the `/v1` branch of the API; the generic calls can also reach `/v2` (see the [overview](./_index.md)).
 
 ### Cache
 

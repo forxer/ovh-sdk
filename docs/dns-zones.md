@@ -124,6 +124,8 @@ Refreshing the zone
 Creating, updating or deleting a record does not publish it: OVHcloud serves the changes once the zone is refreshed. The SDK never refreshes on its own, so that several changes can be grouped and published with a single call:
 
 ```php
+use OvhSdk\Enums\RecordType;
+
 $zone = $ovh->domain()->zone('example.com');
 
 $zone->records()->create(RecordType::A, '203.0.113.10', 'app');
