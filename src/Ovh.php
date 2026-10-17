@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace OvhSdk;
 
+use LogicException;
+use OvhSdk\Auth\ApplicationKeys;
+use OvhSdk\Data\Auth\AccessRule;
+use OvhSdk\Data\Auth\CredentialRequest;
 use OvhSdk\Enums\Region;
 use OvhSdk\Exceptions\OvhException;
 use OvhSdk\Requests\Auth\GetServerTime;
+use OvhSdk\Requests\Auth\RequestCredential;
 use OvhSdk\Requests\Generic\GenericJsonRequest;
 use OvhSdk\Requests\Generic\GenericRequest;
 use OvhSdk\Support\SystemClock;
@@ -94,6 +99,30 @@ final class Ovh extends Connector
         $this->cache?->set($key, $delta, self::TIME_DELTA_TTL);
 
         return $this->timeDelta = $delta;
+    }
+
+    /**
+     * Ask OVHcloud for a consumer key; the user must then validate it at the returned URL.
+     *
+     * Only the application key is sent, as in the official delegation guide.
+     *
+     * @param  list<AccessRule>  $accessRules
+     */
+    public function requestConsumerKey(array $accessRules, ?string $redirection = null): CredentialRequest
+    {
+        $keys = $this->getAuthenticator();
+
+        if (! $keys instanceof ApplicationKeys) {
+            throw new LogicException(\sprintf('Requesting a consumer key needs %s credentials.', ApplicationKeys::class));
+        }
+
+        $request = new RequestCredential($accessRules, $redirection);
+        $request->authenticate(new ApplicationKeys($keys->applicationKey, $keys->applicationSecret));
+
+        $credential = $this->send($request)->dto();
+        \assert($credential instanceof CredentialRequest);
+
+        return $credential;
     }
 
     public function getRequestException(Response $response, ?Throwable $senderException): Throwable
