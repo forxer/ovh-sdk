@@ -71,6 +71,19 @@ it('reuses the time delta from the PSR-16 cache', function () {
     expect(sentRequest($ovh, GenericRequest::class)->headers()->get('X-Ovh-Timestamp'))->toBe('1700000000');
 });
 
+it('stores the time delta in the PSR-16 cache for the next connectors', function () {
+    $cache = new ArrayCache($this->clock);
+    $responses = [GetServerTime::class => MockResponse::make('1700000000'), GenericRequest::class => MockResponse::make([])];
+
+    ovh($responses, $this->keys, $cache, $this->clock)->get('/me');
+    $second = ovh($responses, $this->keys, $cache, $this->clock);
+    $second->get('/me');
+
+    expect($cache->get('ovh-sdk.time-delta.eu'))->toBe(10)
+        ->and(sentRequest($second, GenericRequest::class)->headers()->get('X-Ovh-Timestamp'))->toBe('1700000000');
+    $second->getMockClient()->assertSentCount(0, GetServerTime::class);
+});
+
 it('never signs the server time request', function () {
     $ovh = ovh([
         GetServerTime::class => MockResponse::make('1700000000'),

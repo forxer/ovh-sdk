@@ -73,6 +73,13 @@ it('only sends the changed fields on update', function () {
         ->and($sent->body()->all())->toBe(['target' => '203.0.113.20']);
 });
 
+it('sends an empty sub-domain and a zero ttl on update', function () {
+    $ovh = ovh([UpdateRecord::class => MockResponse::make('', 204)]);
+    $ovh->domain()->zone('example.com')->records()->update(42, subDomain: '', ttl: 0);
+
+    expect(sentRequest($ovh, UpdateRecord::class)->body()->all())->toBe(['subDomain' => '', 'ttl' => 0]);
+});
+
 it('refuses an update without changes', function () {
     $ovh = ovh();
 
@@ -101,3 +108,21 @@ it('refuses to create a record of unknown type', function () {
     expect(fn () => ovh()->domain()->zone('example.com')->records()->create(RecordType::Unknown, '203.0.113.10'))
         ->toThrow(InvalidArgumentException::class);
 });
+
+it('refuses to filter records on an unknown type', function () {
+    $ovh = ovh([ListRecords::class => MockResponse::make([42]), GetRecord::class => MockResponse::make(fixtureData('record'))]);
+    $records = $ovh->domain()->zone('example.com')->records();
+
+    expect(fn () => $records->ids(type: RecordType::Unknown))->toThrow(InvalidArgumentException::class)
+        ->and(fn () => $records->list(type: RecordType::Unknown))->toThrow(InvalidArgumentException::class);
+    $ovh->getMockClient()->assertNothingSent();
+});
+
+it('refuses a record that does not follow the schema', function (array $data, string $message) {
+    $records = ovh([GetRecord::class => MockResponse::make($data)])->domain()->zone('example.com')->records();
+
+    expect(fn () => $records->get(42))->toThrow(UnexpectedValueException::class, $message);
+})->with([
+    'id of the wrong type' => [['id' => '42'] + fixtureData('record'), 'OVH response field "id" must be an integer.'],
+    'target missing' => [array_diff_key(fixtureData('record'), ['target' => true]), 'OVH response field "target" must be a string.'],
+]);
