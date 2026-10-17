@@ -31,6 +31,9 @@ final class Ovh extends Facade
     /**
      * Fakes every call; /auth/time and the OAuth2 token are answered automatically unless $responses mocks them.
      *
+     * Only a GetServerTime::class or GetOAuth2Token::class key replaces these default responses:
+     * Saloon matches the request class before the URL, so a URL key for the same endpoint is ignored.
+     *
      * @param  array<array-key, MockResponse|Fixture|callable>  $responses  Saloon mock responses, keyed by request class, URL or sequence index
      */
     public static function fake(array $responses = []): MockClient
