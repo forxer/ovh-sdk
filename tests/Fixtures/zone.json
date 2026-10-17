@@ -1,0 +1,12 @@
+{
+    "name": "example.com",
+    "nameServers": ["dns200.anycast.me", "ns200.anycast.me"],
+    "lastUpdate": "2026-09-01T10:00:00+02:00",
+    "dnssecSupported": true,
+    "dnssecActivated": false,
+    "hasDnsAnycast": false,
+    "iam": {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "urn": "urn:v1:eu:resource:dnsZone:example.com"
+    }
+}

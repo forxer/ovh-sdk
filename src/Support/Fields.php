@@ -122,6 +122,27 @@ final class Fields
 
     /**
      * @param  array<array-key, mixed>  $data
+     * @return list<string>
+     */
+    public static function stringList(array $data, string $key): array
+    {
+        $value = $data[$key] ?? null;
+
+        if (! \is_array($value) || ! array_is_list($value)) {
+            throw self::invalid($key, 'a list of strings');
+        }
+
+        $strings = [];
+
+        foreach ($value as $item) {
+            $strings[] = \is_string($item) ? $item : throw self::invalid($key, 'a list of strings');
+        }
+
+        return $strings;
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $data
      * @return list<int>|null
      */
     public static function nullableIntList(array $data, string $key): ?array

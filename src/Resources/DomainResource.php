@@ -49,4 +49,14 @@ final class DomainResource extends Resource
 
         return $infos;
     }
+
+    public function zones(): ZonesResource
+    {
+        return new ZonesResource($this->connector);
+    }
+
+    public function zone(string $zoneName): ZoneResource
+    {
+        return new ZoneResource($this->connector, $zoneName);
+    }
 }
