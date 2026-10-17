@@ -24,6 +24,8 @@
     },
     "require": {
         "php": "^8.4",
+        "psr/clock": "^1.0",
+        "psr/simple-cache": "^3.0",
         "saloonphp/saloon": "^4.5"
     },
     "require-dev": {
