@@ -49,3 +49,10 @@ it('resolves unknown enum values instead of failing', function () {
         ->and(CredentialState::fromOvh(null))->toBe(CredentialState::Unknown)
         ->and(CredentialState::fromOvh('validated'))->toBe(CredentialState::Validated);
 });
+
+it('rejects a credential response without consumer key', function () {
+    $ovh = ovh([RequestCredential::class => MockResponse::make(['state' => 'pendingValidation'])], new ApplicationKeys('app-key', 'app-secret'));
+
+    expect(fn () => $ovh->requestConsumerKey([AccessRule::fromString('GET:/me')]))
+        ->toThrow(UnexpectedValueException::class);
+});
