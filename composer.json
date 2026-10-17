@@ -30,9 +30,16 @@
     },
     "require-dev": {
         "laravel/pint": "^1.32",
+        "orchestra/testbench": "^11.3",
         "pestphp/pest": "^5.3",
         "phpstan/phpstan": "^2.3",
         "rector/rector": "^2.7"
+    },
+    "conflict": {
+        "laravel/framework": "<13.0"
+    },
+    "suggest": {
+        "laravel/framework": "Laravel 13 integration (service provider, facade, artisan command)"
     },
     "autoload": {
         "psr-4": {
@@ -50,6 +57,16 @@
         },
         "preferred-install": "dist",
         "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "OvhSdk\\Laravel\\OvhSdkServiceProvider"
+            ],
+            "aliases": {
+                "Ovh": "OvhSdk\\Laravel\\Facades\\Ovh"
+            }
+        }
     },
     "scripts": {
         "lint": "pint --test",

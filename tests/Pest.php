@@ -10,7 +10,10 @@ use Saloon\Contracts\Authenticator;
 use Saloon\Http\Auth\NullAuthenticator;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\PendingRequest;
+use Tests\Laravel\TestCase;
 use Tests\Support\FrozenClock;
+
+uses(TestCase::class)->in('Laravel');
 
 /**
  * Build a connector backed by a Saloon mock client.
