@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace OvhSdk\Resources;
 
-use InvalidArgumentException;
 use OvhSdk\Data\Dns\ZoneTask;
 use OvhSdk\Enums\TaskFunction;
 use OvhSdk\Enums\TaskStatus;
+use OvhSdk\Exceptions\CouldNotSendUnknownCase;
 use OvhSdk\Requests\Dns\GetZoneTask;
 use OvhSdk\Requests\Dns\ListZoneTasks;
 use Saloon\Http\Connector;
@@ -24,12 +24,16 @@ final class ZoneTasksResource extends Resource
      *
      * @return list<int>
      *
-     * @throws InvalidArgumentException When $function or $status is the Unknown case.
+     * @throws CouldNotSendUnknownCase When $function or $status is the Unknown case.
      */
     public function ids(?TaskFunction $function = null, ?TaskStatus $status = null): array
     {
-        if ($function === TaskFunction::Unknown || $status === TaskStatus::Unknown) {
-            throw new InvalidArgumentException('TaskFunction::Unknown and TaskStatus::Unknown cannot be sent to OVHcloud.');
+        if ($function === TaskFunction::Unknown) {
+            throw CouldNotSendUnknownCase::of($function);
+        }
+
+        if ($status === TaskStatus::Unknown) {
+            throw CouldNotSendUnknownCase::of($status);
         }
 
         /** @var list<int> */
@@ -41,7 +45,7 @@ final class ZoneTasksResource extends Resource
      *
      * @return list<ZoneTask>
      *
-     * @throws InvalidArgumentException When $function or $status is the Unknown case.
+     * @throws CouldNotSendUnknownCase When $function or $status is the Unknown case.
      */
     public function list(?TaskFunction $function = null, ?TaskStatus $status = null): array
     {

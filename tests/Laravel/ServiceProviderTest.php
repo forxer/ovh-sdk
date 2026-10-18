@@ -5,6 +5,7 @@ declare(strict_types=1);
 use OvhSdk\Auth\ApplicationKeys;
 use OvhSdk\Auth\ServiceAccount;
 use OvhSdk\Enums\Region;
+use OvhSdk\Laravel\Exceptions\InvalidConfiguration;
 use OvhSdk\Ovh;
 use Psr\SimpleCache\CacheInterface;
 
@@ -32,8 +33,9 @@ it('builds a service account connector', function () {
 });
 
 it('names the environment variable when the configuration is wrong', function (array $config, string $variable) {
-    expect(fn () => resolveOvh($config))->toThrow(InvalidArgumentException::class, $variable);
+    expect(fn () => resolveOvh($config))->toThrow(InvalidConfiguration::class, $variable);
 })->with([
+    [['ovh-sdk.region' => 'mars'], 'OVH_REGION'],
     [['ovh-sdk.auth' => 'magic'], 'OVH_AUTH'],
     [['ovh-sdk.application_keys.application_key' => null], 'OVH_APPLICATION_KEY'],
     [['ovh-sdk.auth' => 'service_account', 'ovh-sdk.service_account.client_id' => null], 'OVH_CLIENT_ID'],

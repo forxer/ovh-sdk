@@ -7,9 +7,9 @@ namespace OvhSdk\Data\Dns;
 use DateTimeImmutable;
 use OvhSdk\Enums\TaskFunction;
 use OvhSdk\Enums\TaskStatus;
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Support\Dates;
 use OvhSdk\Support\Fields;
-use UnexpectedValueException;
 
 /**
  * Schema domain.zone.Task, an operation OVHcloud runs on a DNS zone.
@@ -33,7 +33,7 @@ final readonly class ZoneTask
     /**
      * @param  array<array-key, mixed>  $data
      *
-     * @throws UnexpectedValueException
+     * @throws CouldNotReadResponse
      */
     public static function fromArray(array $data): self
     {

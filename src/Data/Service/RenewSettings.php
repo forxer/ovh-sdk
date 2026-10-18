@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace OvhSdk\Data\Service;
 
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Support\Fields;
-use UnexpectedValueException;
 
 /**
  * Schema service.RenewType.
@@ -23,7 +23,7 @@ final readonly class RenewSettings
     /**
      * @param  array<array-key, mixed>  $data
      *
-     * @throws UnexpectedValueException
+     * @throws CouldNotReadResponse
      */
     public static function fromArray(array $data): self
     {

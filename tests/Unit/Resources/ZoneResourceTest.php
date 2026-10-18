@@ -5,6 +5,7 @@ declare(strict_types=1);
 use OvhSdk\Data\Dns\Zone;
 use OvhSdk\Data\Dns\ZoneFileRecord;
 use OvhSdk\Enums\RecordType;
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Requests\Dns\ExportZone;
 use OvhSdk\Requests\Dns\GetZone;
 use OvhSdk\Requests\Dns\GetZoneStatus;
@@ -89,7 +90,7 @@ it('accepts a zone status without errors, warnings or last refresh', function ()
 it('refuses a zone status that does not follow the schema', function (array $data, string $message) {
     $zone = ovh([GetZoneStatus::class => MockResponse::make($data)])->domain()->zone('example.com');
 
-    expect(fn () => $zone->status())->toThrow(UnexpectedValueException::class, $message);
+    expect(fn () => $zone->status())->toThrow(CouldNotReadResponse::class, $message);
 })->with([
     'deployment flag missing' => [array_diff_key(fixtureData('zone-status'), ['isDeployed' => true]), 'OVH response field "isDeployed" must be a boolean.'],
     'errors holding an object' => [['errors' => [['message' => 'x']]] + fixtureData('zone-status'), 'OVH response field "errors" must be a list of strings or null.'],
@@ -110,7 +111,7 @@ it('exports a zone as a BIND zone file', function () {
 it('refuses a zone export that is not a JSON string', function () {
     $zone = ovh([ExportZone::class => MockResponse::make(['$TTL 3600'])])->domain()->zone('example.com');
 
-    expect(fn () => $zone->export())->toThrow(UnexpectedValueException::class, 'OVH zone export response is not a string.');
+    expect(fn () => $zone->export())->toThrow(CouldNotReadResponse::class, 'OVH zone export response is not a string.');
 });
 
 it('splits the export of a zone into records, in a single call', function () {
@@ -158,9 +159,10 @@ it('filters the history of a zone between two dates', function () {
 it('refuses a zone history that is not a list of dates', function (mixed $body, string $message) {
     $zone = ovh([ListZoneHistory::class => MockResponse::make($body)])->domain()->zone('example.com');
 
-    expect(fn () => $zone->history())->toThrow(UnexpectedValueException::class, $message);
+    expect(fn () => $zone->history())->toThrow(CouldNotReadResponse::class, $message);
 })->with([
     'an object' => [['date' => '2026-10-08T09:28:33+02:00'], 'OVH zone history response is not a list.'],
     'a timestamp' => [[1700000000], 'OVH zone history response holds a value that is not a string.'],
     'a value that is not a date' => [['yesterday at noon'], 'OVH date value "yesterday at noon" cannot be parsed.'],
+    'an empty date' => [[''], 'OVH date value is empty.'],
 ]);

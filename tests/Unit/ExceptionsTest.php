@@ -5,11 +5,20 @@ declare(strict_types=1);
 use OvhSdk\Exceptions\AuthenticationException;
 use OvhSdk\Exceptions\BadRequestException;
 use OvhSdk\Exceptions\ConflictException;
+use OvhSdk\Exceptions\CouldNotAuthenticateRequest;
+use OvhSdk\Exceptions\CouldNotParseZoneFile;
+use OvhSdk\Exceptions\CouldNotReadResponse;
+use OvhSdk\Exceptions\CouldNotRequestConsumerKey;
+use OvhSdk\Exceptions\CouldNotSendUnknownCase;
+use OvhSdk\Exceptions\CouldNotUpdateRecord;
 use OvhSdk\Exceptions\ForbiddenException;
+use OvhSdk\Exceptions\InvalidAccessRule;
+use OvhSdk\Exceptions\InvalidZoneName;
 use OvhSdk\Exceptions\NotFoundException;
 use OvhSdk\Exceptions\OvhException;
 use OvhSdk\Exceptions\ServerException;
 use OvhSdk\Exceptions\TooManyRequestsException;
+use OvhSdk\Laravel\Exceptions\InvalidConfiguration;
 use Saloon\Http\Faking\MockResponse;
 
 it('maps OVH errors to typed exceptions', function (int $status, string $exception) {
@@ -49,3 +58,19 @@ it('survives a non JSON error body', function () {
 
     expect(fn () => $ovh->get('/me'))->toThrow(ServerException::class, 'HTTP 502');
 });
+
+// Code catching the SPL exception the SDK threw before its dedicated exceptions keeps catching them.
+it('keeps the SPL parent of the exception it replaced', function (string $exception, string $parent) {
+    expect(is_subclass_of($exception, $parent))->toBeTrue();
+})->with([
+    [InvalidAccessRule::class, InvalidArgumentException::class],
+    [CouldNotSendUnknownCase::class, InvalidArgumentException::class],
+    [CouldNotUpdateRecord::class, InvalidArgumentException::class],
+    [InvalidZoneName::class, InvalidArgumentException::class],
+    [InvalidConfiguration::class, InvalidArgumentException::class],
+    [CouldNotParseZoneFile::class, UnexpectedValueException::class],
+    [CouldNotReadResponse::class, UnexpectedValueException::class],
+    [CouldNotReadResponse::class, RuntimeException::class],
+    [CouldNotRequestConsumerKey::class, LogicException::class],
+    [CouldNotAuthenticateRequest::class, LogicException::class],
+]);

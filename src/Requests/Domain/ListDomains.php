@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace OvhSdk\Requests\Domain;
 
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Requests\OvhRequest;
 use Saloon\Enums\Method;
 use Saloon\Http\Response;
-use UnexpectedValueException;
 
 /**
  * Names of the domains of the account.
@@ -19,18 +19,18 @@ final class ListDomains extends OvhRequest
     /**
      * @return list<string>
      *
-     * @throws UnexpectedValueException
+     * @throws CouldNotReadResponse
      */
     public function createDtoFromResponse(Response $response): array
     {
         $names = $response->json();
 
         if (! array_is_list($names)) {
-            throw new UnexpectedValueException('OVH domain list response is not a list.');
+            throw CouldNotReadResponse::notAList('domain list');
         }
 
         return array_map(
-            static fn (mixed $name): string => \is_string($name) ? $name : throw new UnexpectedValueException('OVH domain list response holds a value that is not a string.'),
+            static fn (mixed $name): string => \is_string($name) ? $name : throw CouldNotReadResponse::invalidListItem('domain list', 'a string'),
             $names,
         );
     }

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use OvhSdk\Data\Dns\Record;
 use OvhSdk\Enums\RecordType;
+use OvhSdk\Exceptions\CouldNotReadResponse;
+use OvhSdk\Exceptions\CouldNotSendUnknownCase;
+use OvhSdk\Exceptions\CouldNotUpdateRecord;
 use OvhSdk\Requests\Dns\CreateRecord;
 use OvhSdk\Requests\Dns\DeleteRecord;
 use OvhSdk\Requests\Dns\GetRecord;
@@ -91,7 +94,8 @@ it('sends an empty sub-domain and a zero ttl on update', function () {
 it('refuses an update without changes', function () {
     $ovh = ovh();
 
-    expect(fn () => $ovh->domain()->zone('example.com')->records()->update(42))->toThrow(InvalidArgumentException::class);
+    expect(fn () => $ovh->domain()->zone('example.com')->records()->update(42))
+        ->toThrow(CouldNotUpdateRecord::class, 'Record 42 of zone "example.com" cannot be updated without any change: pass at least one of target, subDomain or ttl.');
     $ovh->getMockClient()->assertNothingSent();
 });
 
@@ -114,22 +118,22 @@ it('maps an unknown record type to Unknown', function () {
 
 it('refuses to create a record of unknown type', function () {
     expect(fn () => ovh()->domain()->zone('example.com')->records()->create(RecordType::Unknown, '203.0.113.10'))
-        ->toThrow(InvalidArgumentException::class);
+        ->toThrow(CouldNotSendUnknownCase::class, 'OvhSdk\\Enums\\RecordType::Unknown cannot be sent to OVHcloud');
 });
 
 it('refuses to filter records on an unknown type', function () {
     $ovh = ovh([ListRecords::class => MockResponse::make([42]), GetRecord::class => MockResponse::make(fixtureData('record'))]);
     $records = $ovh->domain()->zone('example.com')->records();
 
-    expect(fn () => $records->ids(type: RecordType::Unknown))->toThrow(InvalidArgumentException::class)
-        ->and(fn () => $records->list(type: RecordType::Unknown))->toThrow(InvalidArgumentException::class);
+    expect(fn () => $records->ids(type: RecordType::Unknown))->toThrow(CouldNotSendUnknownCase::class, 'OvhSdk\\Enums\\RecordType::Unknown cannot be sent to OVHcloud')
+        ->and(fn () => $records->list(type: RecordType::Unknown))->toThrow(CouldNotSendUnknownCase::class, 'OvhSdk\\Enums\\RecordType::Unknown cannot be sent to OVHcloud');
     $ovh->getMockClient()->assertNothingSent();
 });
 
 it('refuses a record that does not follow the schema', function (array $data, string $message) {
     $records = ovh([GetRecord::class => MockResponse::make($data)])->domain()->zone('example.com')->records();
 
-    expect(fn () => $records->get(42))->toThrow(UnexpectedValueException::class, $message);
+    expect(fn () => $records->get(42))->toThrow(CouldNotReadResponse::class, $message);
 })->with([
     'id of the wrong type' => [['id' => '42'] + fixtureData('record'), 'OVH response field "id" must be an integer.'],
     'target missing' => [array_diff_key(fixtureData('record'), ['target' => true]), 'OVH response field "target" must be a string.'],

@@ -6,11 +6,11 @@ namespace OvhSdk\Requests\Dns;
 
 use DateTimeImmutable;
 use DateTimeInterface;
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Requests\OvhRequest;
 use OvhSdk\Support\Dates;
 use Saloon\Enums\Method;
 use Saloon\Http\Response;
-use UnexpectedValueException;
 
 /**
  * Creation dates of the restore points of a DNS zone, optionally between two dates.
@@ -33,20 +33,20 @@ final class ListZoneHistory extends OvhRequest
      *
      * @return list<DateTimeImmutable>
      *
-     * @throws UnexpectedValueException
+     * @throws CouldNotReadResponse
      */
     public function createDtoFromResponse(Response $response): array
     {
         $values = $response->json();
 
         if (! array_is_list($values)) {
-            throw new UnexpectedValueException('OVH zone history response is not a list.');
+            throw CouldNotReadResponse::notAList('zone history');
         }
 
         $dates = array_map(
             static fn (mixed $value): DateTimeImmutable => \is_string($value)
                 ? Dates::parse($value)
-                : throw new UnexpectedValueException('OVH zone history response holds a value that is not a string.'),
+                : throw CouldNotReadResponse::invalidListItem('zone history', 'a string'),
             $values,
         );
 

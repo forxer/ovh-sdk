@@ -85,10 +85,10 @@ $credential->validationUrl;  // ?string, to open to validate the rules
 
 `requestConsumerKey(array $accessRules, ?string $redirection = null): CredentialRequest` sends `POST /auth/credential` with the application key only, as in the official delegation guide. The consumer key works once the account owner has opened `validationUrl`, logged in and accepted the rules; OVHcloud then redirects to `redirection` when one was given.
 
-- `AccessRule::fromString()` reads a rule written as `METHOD:/path`, `*` being a wildcard in the path. It throws an `InvalidArgumentException` for a rule without `:`, with an unknown method or with an empty path.
+- `AccessRule::fromString()` reads a rule written as `METHOD:/path`, `*` being a wildcard in the path. It throws an `OvhSdk\Exceptions\InvalidAccessRule` (an `InvalidArgumentException`) for a rule without `:`, with an unknown method or with an empty path.
 - `OvhSdk\Enums\HttpMethod` has the cases `Get`, `Post`, `Put`, `Patch` and `Delete`.
 - `OvhSdk\Enums\CredentialState` has the cases `PendingValidation`, `Validated`, `Refused`, `Expired` and `Unknown`.
-- Calling `requestConsumerKey()` on a connector that does not hold `ApplicationKeys` throws a `LogicException`.
+- Calling `requestConsumerKey()` on a connector that does not hold `ApplicationKeys` throws an `OvhSdk\Exceptions\CouldNotRequestConsumerKey` (a `LogicException`).
 
 In a Laravel application, the `ovh:consumer-key` artisan command does the same from the command line:
 

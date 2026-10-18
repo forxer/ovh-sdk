@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace OvhSdk\Support;
 
-use UnexpectedValueException;
+use OvhSdk\Exceptions\CouldNotReadResponse;
 
 /**
  * Typed reads of a decoded OVHcloud JSON object, for the DTO factories.
  *
  * A required field that is missing or of the wrong type, or a nullable field of the wrong type, means the
- * response does not follow the schema: an UnexpectedValueException is thrown rather than hydrating half a DTO.
+ * response does not follow the schema: a CouldNotReadResponse is thrown rather than hydrating half a DTO.
  *
  * @internal
  */
@@ -23,7 +23,7 @@ final class Fields
     {
         $value = $data[$key] ?? null;
 
-        return \is_string($value) ? $value : throw self::invalid($key, 'a string');
+        return \is_string($value) ? $value : throw CouldNotReadResponse::invalidField($key, 'a string');
     }
 
     /**
@@ -33,7 +33,7 @@ final class Fields
     {
         $value = $data[$key] ?? null;
 
-        return $value === null || \is_string($value) ? $value : throw self::invalid($key, 'a string or null');
+        return $value === null || \is_string($value) ? $value : throw CouldNotReadResponse::invalidField($key, 'a string or null');
     }
 
     /**
@@ -43,7 +43,7 @@ final class Fields
     {
         $value = $data[$key] ?? null;
 
-        return \is_int($value) ? $value : throw self::invalid($key, 'an integer');
+        return \is_int($value) ? $value : throw CouldNotReadResponse::invalidField($key, 'an integer');
     }
 
     /**
@@ -53,7 +53,7 @@ final class Fields
     {
         $value = $data[$key] ?? null;
 
-        return $value === null || \is_int($value) ? $value : throw self::invalid($key, 'an integer or null');
+        return $value === null || \is_int($value) ? $value : throw CouldNotReadResponse::invalidField($key, 'an integer or null');
     }
 
     /**
@@ -63,7 +63,7 @@ final class Fields
     {
         $value = $data[$key] ?? null;
 
-        return \is_bool($value) ? $value : throw self::invalid($key, 'a boolean');
+        return \is_bool($value) ? $value : throw CouldNotReadResponse::invalidField($key, 'a boolean');
     }
 
     /**
@@ -73,7 +73,7 @@ final class Fields
     {
         $value = $data[$key] ?? null;
 
-        return $value === null || \is_bool($value) ? $value : throw self::invalid($key, 'a boolean or null');
+        return $value === null || \is_bool($value) ? $value : throw CouldNotReadResponse::invalidField($key, 'a boolean or null');
     }
 
     /**
@@ -96,7 +96,7 @@ final class Fields
     {
         $value = $data[$key] ?? null;
 
-        return $value === null || \is_array($value) ? $value : throw self::invalid($key, 'an object or null');
+        return $value === null || \is_array($value) ? $value : throw CouldNotReadResponse::invalidField($key, 'an object or null');
     }
 
     /**
@@ -108,13 +108,13 @@ final class Fields
         $value = $data[$key] ?? null;
 
         if (! \is_array($value) || ! array_is_list($value)) {
-            throw self::invalid($key, 'a list of objects');
+            throw CouldNotReadResponse::invalidField($key, 'a list of objects');
         }
 
         $objects = [];
 
         foreach ($value as $item) {
-            $objects[] = \is_array($item) ? $item : throw self::invalid($key, 'a list of objects');
+            $objects[] = \is_array($item) ? $item : throw CouldNotReadResponse::invalidField($key, 'a list of objects');
         }
 
         return $objects;
@@ -129,13 +129,13 @@ final class Fields
         $value = $data[$key] ?? null;
 
         if (! \is_array($value) || ! array_is_list($value)) {
-            throw self::invalid($key, 'a list of strings');
+            throw CouldNotReadResponse::invalidField($key, 'a list of strings');
         }
 
         $strings = [];
 
         foreach ($value as $item) {
-            $strings[] = \is_string($item) ? $item : throw self::invalid($key, 'a list of strings');
+            $strings[] = \is_string($item) ? $item : throw CouldNotReadResponse::invalidField($key, 'a list of strings');
         }
 
         return $strings;
@@ -154,13 +154,13 @@ final class Fields
         }
 
         if (! \is_array($value) || ! array_is_list($value)) {
-            throw self::invalid($key, 'a list of strings or null');
+            throw CouldNotReadResponse::invalidField($key, 'a list of strings or null');
         }
 
         $strings = [];
 
         foreach ($value as $item) {
-            $strings[] = \is_string($item) ? $item : throw self::invalid($key, 'a list of strings or null');
+            $strings[] = \is_string($item) ? $item : throw CouldNotReadResponse::invalidField($key, 'a list of strings or null');
         }
 
         return $strings;
@@ -179,20 +179,15 @@ final class Fields
         }
 
         if (! \is_array($value) || ! array_is_list($value)) {
-            throw self::invalid($key, 'a list of integers or null');
+            throw CouldNotReadResponse::invalidField($key, 'a list of integers or null');
         }
 
         $integers = [];
 
         foreach ($value as $item) {
-            $integers[] = \is_int($item) ? $item : throw self::invalid($key, 'a list of integers or null');
+            $integers[] = \is_int($item) ? $item : throw CouldNotReadResponse::invalidField($key, 'a list of integers or null');
         }
 
         return $integers;
-    }
-
-    private static function invalid(string $key, string $expected): UnexpectedValueException
-    {
-        return new UnexpectedValueException(\sprintf('OVH response field "%s" must be %s.', $key, $expected));
     }
 }

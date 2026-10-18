@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace OvhSdk\Data\Dns;
 
 use OvhSdk\Enums\RedirectionType;
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Support\Fields;
-use UnexpectedValueException;
 
 /**
  * Schema domain.zone.Redirection. The title, description and keywords only apply to invisible redirections.
@@ -27,7 +27,7 @@ final readonly class Redirection
     /**
      * @param  array<array-key, mixed>  $data
      *
-     * @throws UnexpectedValueException
+     * @throws CouldNotReadResponse
      */
     public static function fromArray(array $data): self
     {

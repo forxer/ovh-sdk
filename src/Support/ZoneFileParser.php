@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace OvhSdk\Support;
 
-use InvalidArgumentException;
 use OvhSdk\Data\Dns\ZoneFile;
 use OvhSdk\Data\Dns\ZoneFileRecord;
 use OvhSdk\Enums\RecordType;
-use UnexpectedValueException;
+use OvhSdk\Exceptions\CouldNotParseZoneFile;
+use OvhSdk\Exceptions\InvalidZoneName;
 
 /**
  * Parser of the BIND zone files (RFC 1035, section 5.1), behind ZoneFile::parse().
@@ -56,7 +56,7 @@ final class ZoneFileParser
     private function __construct(string $zoneName)
     {
         if (trim($zoneName, '.') === '') {
-            throw new InvalidArgumentException('The zone name of a zone file cannot be empty.');
+            throw InvalidZoneName::empty($zoneName);
         }
 
         $this->origin = rtrim($zoneName, '.').'.';
@@ -64,8 +64,8 @@ final class ZoneFileParser
     }
 
     /**
-     * @throws InvalidArgumentException
-     * @throws UnexpectedValueException
+     * @throws InvalidZoneName
+     * @throws CouldNotParseZoneFile
      */
     public static function parse(string $content, string $zoneName): ZoneFile
     {
@@ -89,7 +89,7 @@ final class ZoneFileParser
      * @return list<array{int, bool, non-empty-list<string>}> the line the entry starts on, whether it starts with a
      *                                                        blank (no owner), and its fields
      *
-     * @throws UnexpectedValueException
+     * @throws CouldNotParseZoneFile
      */
     private static function entries(string $content): array
     {
@@ -130,14 +130,14 @@ final class ZoneFileParser
             } elseif ($token['paren'] === '(') {
                 $depth++;
             } elseif ($token['paren'] === ')') {
-                $depth = $depth > 0 ? $depth - 1 : throw self::invalid($line, 'closing parenthesis without an opening one');
+                $depth = $depth > 0 ? $depth - 1 : throw CouldNotParseZoneFile::closingParenthesisWithoutOpening($line);
             } elseif ($token['invalid'] !== null) {
-                throw self::invalid($line, 'unterminated quoted string or escape');
+                throw CouldNotParseZoneFile::unterminatedQuoteOrEscape($line);
             }
         }
 
         if ($depth > 0) {
-            throw self::invalid($start, 'parenthesis left open');
+            throw CouldNotParseZoneFile::parenthesisLeftOpen($start);
         }
 
         if ($fields !== []) {
@@ -150,19 +150,19 @@ final class ZoneFileParser
     /**
      * @param  non-empty-list<string>  $fields
      *
-     * @throws UnexpectedValueException
+     * @throws CouldNotParseZoneFile
      */
     private function directive(int $line, array $fields): void
     {
-        $value = $fields[1] ?? throw self::invalid($line, \sprintf('the %s directive has no value', $fields[0]));
+        $value = $fields[1] ?? throw CouldNotParseZoneFile::directiveWithoutValue($line, $fields[0]);
 
         switch (strtoupper($fields[0])) {
             case '$TTL':
-                $ttl = self::ttl($value) ?? throw self::invalid($line, \sprintf('"%s" is not a TTL', $value));
+                $ttl = self::ttl($value) ?? throw CouldNotParseZoneFile::invalidTtl($line, $value);
 
                 // The records without a TTL of their own would otherwise follow different defaults.
                 if ($this->defaultTtl !== null && $this->defaultTtl !== $ttl) {
-                    throw self::invalid($line, 'a second $TTL directive changes the default TTL');
+                    throw CouldNotParseZoneFile::defaultTtlChanged($line);
                 }
 
                 $this->defaultTtl = $ttl;
@@ -175,19 +175,19 @@ final class ZoneFileParser
                 break;
 
             default:
-                throw self::invalid($line, \sprintf('the %s directive is not supported', $fields[0]));
+                throw CouldNotParseZoneFile::unsupportedDirective($line, $fields[0]);
         }
     }
 
     /**
      * @param  non-empty-list<string>  $fields
      *
-     * @throws UnexpectedValueException
+     * @throws CouldNotParseZoneFile
      */
     private function record(int $line, bool $ownerless, array $fields): void
     {
         $owner = $ownerless
-            ? $this->owner ?? throw self::invalid($line, 'a record without owner must follow another record')
+            ? $this->owner ?? throw CouldNotParseZoneFile::recordWithoutOwner($line)
             : $this->absolute(array_shift($fields));
         $this->owner = $owner;
 
@@ -208,10 +208,10 @@ final class ZoneFileParser
             }
         }
 
-        $type = array_shift($fields) ?? throw self::invalid($line, 'record without type');
+        $type = array_shift($fields) ?? throw CouldNotParseZoneFile::recordWithoutType($line);
 
         if ($fields === []) {
-            throw self::invalid($line, \sprintf('the %s record has no data', $type));
+            throw CouldNotParseZoneFile::recordWithoutData($line, $type);
         }
 
         if (strtoupper($type) === 'SOA') {
@@ -236,7 +236,7 @@ final class ZoneFileParser
     }
 
     /**
-     * @throws UnexpectedValueException
+     * @throws CouldNotParseZoneFile
      */
     private function relative(int $line, string $absolute): string
     {
@@ -245,7 +245,7 @@ final class ZoneFileParser
         return match (true) {
             $name === $this->zone => '',
             str_ends_with($name, '.'.$this->zone) => substr($absolute, 0, -\strlen($this->zone) - 1),
-            default => throw self::invalid($line, \sprintf('"%s" is outside the zone "%s"', $absolute, $this->zone)),
+            default => throw CouldNotParseZoneFile::nameOutsideZone($line, $absolute, $this->zone),
         };
     }
 
@@ -268,10 +268,5 @@ final class ZoneFileParser
             static fn (array $part): int => (int) $part[1] * self::TTL_UNITS[strtolower($part[2])],
             $parts,
         ));
-    }
-
-    private static function invalid(int $line, string $message): UnexpectedValueException
-    {
-        return new UnexpectedValueException(\sprintf('Zone file, line %d: %s.', $line, $message));
     }
 }

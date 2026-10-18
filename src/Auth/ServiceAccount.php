@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace OvhSdk\Auth;
 
-use LogicException;
+use OvhSdk\Exceptions\CouldNotAuthenticateRequest;
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Ovh;
 use OvhSdk\Requests\Auth\GetOAuth2Token;
-use RuntimeException;
 use Saloon\Contracts\Authenticator;
 use Saloon\Http\PendingRequest;
 
@@ -34,7 +34,7 @@ final class ServiceAccount implements Authenticator
         $connector = $pendingRequest->getConnector();
 
         if (! $connector instanceof Ovh) {
-            throw new LogicException(\sprintf('%s can only authenticate requests sent through %s.', self::class, Ovh::class));
+            throw CouldNotAuthenticateRequest::outsideOvhConnector($this, $connector);
         }
 
         $pendingRequest->headers()->add('Authorization', 'Bearer '.$this->token($connector));
@@ -68,11 +68,11 @@ final class ServiceAccount implements Authenticator
         $expiresIn = $response->json('expires_in');
 
         if (! \is_string($accessToken) || $accessToken === '') {
-            throw new RuntimeException('OAuth2 token response is missing access_token.');
+            throw CouldNotReadResponse::missingField('OAuth2 token', 'access_token');
         }
 
         if (! is_numeric($expiresIn)) {
-            throw new RuntimeException('OAuth2 token response is missing expires_in.');
+            throw CouldNotReadResponse::missingField('OAuth2 token', 'expires_in');
         }
 
         $expiresAt = $now + (int) $expiresIn - self::EXPIRY_MARGIN;

@@ -5,6 +5,8 @@ declare(strict_types=1);
 use OvhSdk\Data\Dns\ZoneFile;
 use OvhSdk\Data\Dns\ZoneFileRecord;
 use OvhSdk\Enums\RecordType;
+use OvhSdk\Exceptions\CouldNotParseZoneFile;
+use OvhSdk\Exceptions\InvalidZoneName;
 
 /**
  * @return list<array{string, ?int, string, string}>
@@ -89,7 +91,7 @@ it('reads an empty zone file', function () {
 });
 
 it('refuses a zone file it cannot understand', function (string $content, string $message) {
-    expect(fn () => ZoneFile::parse($content, 'example.com'))->toThrow(UnexpectedValueException::class, $message);
+    expect(fn () => ZoneFile::parse($content, 'example.com'))->toThrow(CouldNotParseZoneFile::class, $message);
 })->with([
     'a name outside the zone' => ["www.example.org. IN A 203.0.113.10\n", 'Zone file, line 1: "www.example.org." is outside the zone "example.com.".'],
     'a first record without owner' => ["\$TTL 3600\n  IN A 203.0.113.10\n", 'Zone file, line 2: a record without owner must follow another record.'],
@@ -104,8 +106,13 @@ it('refuses a zone file it cannot understand', function (string $content, string
     'a record without data' => ["www IN A\n", 'Zone file, line 1: the A record has no data.'],
 ]);
 
+it('gives the line it cannot read', function () {
+    expect(fn () => ZoneFile::parse("\$TTL 3600\nwww IN A 203.0.113.10\n\$TTL 60\n", 'example.com'))
+        ->toThrow(fn (CouldNotParseZoneFile $exception) => expect($exception->zoneFileLine)->toBe(3));
+});
+
 it('refuses an empty zone name', function () {
-    expect(fn () => ZoneFile::parse('', '.'))->toThrow(InvalidArgumentException::class);
+    expect(fn () => ZoneFile::parse('', '.'))->toThrow(InvalidZoneName::class, 'A zone file needs the name of its zone, such as "example.com", "." given.');
 });
 
 it('keeps an unknown type out of the known types', function () {

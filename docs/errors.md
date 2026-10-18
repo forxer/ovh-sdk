@@ -77,7 +77,7 @@ try {
 
 ### OAuth2 token errors
 
-The token request of a service account goes through the same connector, so its errors are `OvhException`s too, with one difference: a `400` or a `401` from the token endpoint throws an `AuthenticationException`. For wrong client credentials, OVHcloud answers `400` with a body like `{"error": "invalid_client"}`, the OAuth2 error format (RFC 6749, section 5.2): the result is an `AuthenticationException` whose message is the `error_description` field of the body, or else its `error` field, here `invalid_client`. A token response without `access_token` or `expires_in` throws a `RuntimeException`.
+The token request of a service account goes through the same connector, so its errors are `OvhException`s too, with one difference: a `400` or a `401` from the token endpoint throws an `AuthenticationException`. For wrong client credentials, OVHcloud answers `400` with a body like `{"error": "invalid_client"}`, the OAuth2 error format (RFC 6749, section 5.2): the result is an `AuthenticationException` whose message is the `error_description` field of the body, or else its `error` field, here `invalid_client`. A token response without `access_token` or `expires_in` throws a `CouldNotReadResponse` (see "Other exceptions" below).
 
 ### Wrong application keys
 
@@ -93,15 +93,42 @@ OVHcloud does not document these messages, so the SDK types these responses by t
 Other exceptions
 ----------------
 
-Not every failure is an OVHcloud error status:
+Not every failure is an OVHcloud error status. For the other failures it detects, the SDK throws a dedicated exception: its class names what failed, its message says why, with the values involved. They live in `OvhSdk\Exceptions`, except `InvalidConfiguration`, which lives in `OvhSdk\Laravel\Exceptions`.
+
+Each one extends a standard SPL exception, so a `catch (InvalidArgumentException)` or a `catch (UnexpectedValueException)` keeps catching them.
+
+| Exception | Extends | When |
+|---|---|---|
+| `CouldNotReadResponse` | `UnexpectedValueException` | a successful response does not follow the official schema: a required field is missing or of the wrong type, a list route does not return a list, a date cannot be parsed, a consumer key response has no `consumerKey`, an OAuth2 token response has no `access_token` or `expires_in`, a zone export is not a JSON string. The SDK throws rather than hydrating half a DTO |
+| `CouldNotParseZoneFile` | `UnexpectedValueException` | a zone file that `ZoneFile::parse()` or `exportedRecords()` cannot read. The message names the line, which the `zoneFileLine` property gives too |
+| `InvalidAccessRule` | `InvalidArgumentException` | a malformed access rule in `AccessRule::fromString()`: no `:`, an unknown method (the message lists the known ones) or an empty path |
+| `CouldNotSendUnknownCase` | `InvalidArgumentException` | the `Unknown` case of an enum given to the SDK: `RecordType::Unknown` given to `ids()`, `list()` or `create()` of the records, `TaskFunction::Unknown` or `TaskStatus::Unknown` given to `ids()` or `list()` of the tasks. The message names the case |
+| `CouldNotUpdateRecord` | `InvalidArgumentException` | a record `update()` without any field, the message naming the record and its zone |
+| `InvalidZoneName` | `InvalidArgumentException` | an empty zone name given to `ZoneFile::parse()` |
+| `InvalidConfiguration` | `InvalidArgumentException` | in Laravel, an incomplete or wrong configuration, the message naming the environment variable to set |
+| `CouldNotRequestConsumerKey` | `LogicException` | `requestConsumerKey()` on a connector without `ApplicationKeys`, the message naming the authenticator it holds |
+| `CouldNotAuthenticateRequest` | `LogicException` | an authenticator of the SDK used with another connector than `OvhSdk\Ovh`, the message naming that connector |
+
+Two more exceptions come from PHP and Saloon:
 
 | Exception | When |
 |---|---|
-| `UnexpectedValueException` | a successful response does not follow the official schema: a required field is missing or of the wrong type, a list route does not return a list, a date cannot be parsed, a consumer key response has no `consumerKey`, a zone export is not a JSON string. The SDK throws rather than hydrating half a DTO. Also a zone file that `ZoneFile::parse()` or `exportedRecords()` cannot read, the message naming the line |
 | `JsonException` | the body of a successful response the SDK reads is not valid JSON |
-| `InvalidArgumentException` | the SDK is misused: a malformed access rule in `AccessRule::fromString()`, `RecordType::Unknown` given to `ids()`, `list()` or `create()` of the records, `update()` without any field, `TaskFunction::Unknown` or `TaskStatus::Unknown` given to `ids()` or `list()` of the tasks, an empty zone name given to `ZoneFile::parse()`. In Laravel, also an incomplete or wrong configuration, the message naming the environment variable to set |
-| `LogicException` | the SDK is misused: `requestConsumerKey()` on a connector without `ApplicationKeys`, or an authenticator of the SDK used with another connector than `OvhSdk\Ovh` |
-| `RuntimeException` | an OAuth2 token response without `access_token` or `expires_in` |
 | `Saloon\Exceptions\Request\FatalRequestException` | no response at all: DNS failure, refused connection, timeout |
+
+A dedicated exception can be caught on its own, without catching the other failures of the same family. For example, for a zone file given by a user:
+
+```php
+use OvhSdk\Data\Dns\ZoneFile;
+use OvhSdk\Exceptions\CouldNotParseZoneFile;
+
+try {
+    $records = ZoneFile::parse($content, 'example.com')->records;
+} catch (CouldNotParseZoneFile $exception) {
+    // "Zone file, line 12: the A record has no data."
+    $errors['zone_file'] = $exception->getMessage();
+    $errorLine = $exception->zoneFileLine;
+}
+```
 
 An unknown enum value is never an error: it is read as the `Unknown` case of the enum (see [Domains](./domains.md) and [DNS zones](./dns-zones.md)).

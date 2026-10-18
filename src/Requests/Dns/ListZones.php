@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace OvhSdk\Requests\Dns;
 
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Requests\OvhRequest;
 use Saloon\Enums\Method;
 use Saloon\Http\Response;
-use UnexpectedValueException;
 
 /**
  * Names of the DNS zones of the account.
@@ -19,18 +19,18 @@ final class ListZones extends OvhRequest
     /**
      * @return list<string>
      *
-     * @throws UnexpectedValueException
+     * @throws CouldNotReadResponse
      */
     public function createDtoFromResponse(Response $response): array
     {
         $names = $response->json();
 
         if (! array_is_list($names)) {
-            throw new UnexpectedValueException('OVH zone list response is not a list.');
+            throw CouldNotReadResponse::notAList('zone list');
         }
 
         return array_map(
-            static fn (mixed $name): string => \is_string($name) ? $name : throw new UnexpectedValueException('OVH zone list response holds a value that is not a string.'),
+            static fn (mixed $name): string => \is_string($name) ? $name : throw CouldNotReadResponse::invalidListItem('zone list', 'a string'),
             $names,
         );
     }

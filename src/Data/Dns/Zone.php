@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace OvhSdk\Data\Dns;
 
 use DateTimeImmutable;
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Support\Dates;
 use OvhSdk\Support\Fields;
-use UnexpectedValueException;
 
 /**
  * Schema domain.Zone, reduced to the properties below: the IAM metadata is ignored.
@@ -29,7 +29,7 @@ final readonly class Zone
     /**
      * @param  array<array-key, mixed>  $data
      *
-     * @throws UnexpectedValueException
+     * @throws CouldNotReadResponse
      */
     public static function fromArray(array $data): self
     {

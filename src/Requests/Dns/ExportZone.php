@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace OvhSdk\Requests\Dns;
 
 use JsonException;
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Requests\OvhRequest;
 use Saloon\Enums\Method;
 use Saloon\Http\Response;
-use UnexpectedValueException;
 
 /**
  * Content of a DNS zone, as a BIND zone file.
@@ -24,13 +24,13 @@ final class ExportZone extends OvhRequest
      * accepts arrays: the body is decoded here.
      *
      * @throws JsonException
-     * @throws UnexpectedValueException
+     * @throws CouldNotReadResponse
      */
     public function createDtoFromResponse(Response $response): string
     {
         $zoneFile = json_decode($response->body(), true, 512, JSON_THROW_ON_ERROR);
 
-        return \is_string($zoneFile) ? $zoneFile : throw new UnexpectedValueException('OVH zone export response is not a string.');
+        return \is_string($zoneFile) ? $zoneFile : throw CouldNotReadResponse::notAString('zone export');
     }
 
     protected function path(): string

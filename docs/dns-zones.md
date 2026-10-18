@@ -136,7 +136,7 @@ Their types can differ. The `DKIM`, `DMARC` and `SPF` types are forms of the OVH
 - the TTL, in seconds or with units (`1h30m`), and the class (`IN`), both optional and in either order;
 - quoted strings, escaped double quotes (`\"`) included, and several strings in one record.
 
-A file it cannot read throws an `UnexpectedValueException` naming the line: an unterminated quoted string, unbalanced parentheses, a record without type or data, a name outside the zone, a directive it does not support, or a second `$TTL` changing the default TTL (the records without a TTL of their own would then follow different defaults). An empty zone name throws an `InvalidArgumentException`.
+A file it cannot read throws an `OvhSdk\Exceptions\CouldNotParseZoneFile` (an `UnexpectedValueException`) naming the line, which its `zoneFileLine` property gives too: an unterminated quoted string, unbalanced parentheses, a record without type or data, a name outside the zone, a directive it does not support, or a second `$TTL` changing the default TTL (the records without a TTL of their own would then follow different defaults). An empty zone name throws an `OvhSdk\Exceptions\InvalidZoneName` (an `InvalidArgumentException`).
 
 History
 -------
@@ -210,7 +210,7 @@ $records->update($record->id, target: '203.0.113.20');
 $records->update($record->id, subDomain: '');   // moves the record to the zone root
 ```
 
-Only the arguments that are not `null` are sent, so `null` means "unchanged". An empty string is sent as is: `subDomain: ''` targets the zone root. A call without any field throws an `InvalidArgumentException` before anything is sent. As `null` means "unchanged", `update()` never sends a `null` TTL.
+Only the arguments that are not `null` are sent, so `null` means "unchanged". An empty string is sent as is: `subDomain: ''` targets the zone root. A call without any field throws an `OvhSdk\Exceptions\CouldNotUpdateRecord` (an `InvalidArgumentException`) before anything is sent. As `null` means "unchanged", `update()` never sends a `null` TTL.
 
 ### Deleting
 
@@ -235,7 +235,7 @@ $records->delete($record->id);
 
 `OvhSdk\Enums\RecordType` has one case per type of the `domain.zone.RecordTypeEnum` schema, named after the value: `A`, `AAAA`, `CAA`, `CNAME`, `DKIM`, `DMARC`, `DNAME`, `HTTPS`, `LOC`, `MX`, `NAPTR`, `NS`, `PTR`, `RP`, `SPF`, `SRV`, `SSHFP`, `SVCB`, `TLSA`, `TXT`, and `Unknown` (value `'__unknown__'`).
 
-A record of a type added by OVHcloud after this version of the SDK is read with the type `RecordType::Unknown`. `RecordType::Unknown` cannot be sent: `ids()`, `list()` and `create()` throw an `InvalidArgumentException` when they receive it.
+A record of a type added by OVHcloud after this version of the SDK is read with the type `RecordType::Unknown`. `RecordType::Unknown` cannot be sent: `ids()`, `list()` and `create()` throw an `OvhSdk\Exceptions\CouldNotSendUnknownCase` (an `InvalidArgumentException`) when they receive it.
 
 Refreshing the zone
 -------------------
@@ -322,7 +322,7 @@ $running = [
 ];
 ```
 
-`TaskFunction::Unknown` and `TaskStatus::Unknown` cannot be sent: `ids()` and `list()` throw an `InvalidArgumentException` when they receive one. The SDK reads the tasks only: accelerating, cancelling or relaunching one is not covered, the `canAccelerate`, `canCancel` and `canRelaunch` flags telling what OVHcloud would allow.
+`TaskFunction::Unknown` and `TaskStatus::Unknown` cannot be sent: `ids()` and `list()` throw an `OvhSdk\Exceptions\CouldNotSendUnknownCase` (an `InvalidArgumentException`) when they receive one. The SDK reads the tasks only: accelerating, cancelling or relaunching one is not covered, the `canAccelerate`, `canCancel` and `canRelaunch` flags telling what OVHcloud would allow.
 
 ### ZoneTask
 

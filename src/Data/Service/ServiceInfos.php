@@ -7,9 +7,9 @@ namespace OvhSdk\Data\Service;
 use DateTimeImmutable;
 use OvhSdk\Enums\RenewalType;
 use OvhSdk\Enums\ServiceStatus;
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Support\Dates;
 use OvhSdk\Support\Fields;
-use UnexpectedValueException;
 
 /**
  * Schema services.Service. Contacts are not kept.
@@ -35,7 +35,7 @@ final readonly class ServiceInfos
     /**
      * @param  array<array-key, mixed>  $data
      *
-     * @throws UnexpectedValueException
+     * @throws CouldNotReadResponse
      */
     public static function fromArray(array $data): self
     {

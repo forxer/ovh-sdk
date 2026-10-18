@@ -196,7 +196,7 @@ expect(fn () => Ovh::domain()->ids())->toThrow(ServerException::class);
 
 `Ovh::fake()` resolves the real connector of the application before attaching the mock client:
 
-- the configuration must be valid in the test environment, or the resolution throws an `InvalidArgumentException` (see [Laravel](./laravel.md)): set test credentials, which only reach the mock client;
+- the configuration must be valid in the test environment, or the resolution throws an `InvalidConfiguration` (see [Laravel](./laravel.md)): set test credentials, which only reach the mock client;
 - the connector writes to the configured cache store: the server time delta and, in service account mode, the `fake-token`. On a persistent store, a fake token could outlive the test: use the `array` store.
 
 In `phpunit.xml`:

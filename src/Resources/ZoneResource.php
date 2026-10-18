@@ -10,13 +10,13 @@ use OvhSdk\Data\Dns\Zone;
 use OvhSdk\Data\Dns\ZoneFile;
 use OvhSdk\Data\Dns\ZoneFileRecord;
 use OvhSdk\Data\Dns\ZoneStatus;
+use OvhSdk\Exceptions\CouldNotParseZoneFile;
 use OvhSdk\Requests\Dns\ExportZone;
 use OvhSdk\Requests\Dns\GetZone;
 use OvhSdk\Requests\Dns\GetZoneStatus;
 use OvhSdk\Requests\Dns\ListZoneHistory;
 use OvhSdk\Requests\Dns\RefreshZone;
 use Saloon\Http\Connector;
-use UnexpectedValueException;
 
 final class ZoneResource extends Resource
 {
@@ -58,7 +58,7 @@ final class ZoneResource extends Resource
      *
      * @return list<ZoneFileRecord>
      *
-     * @throws UnexpectedValueException When the export is not a zone file the parser understands.
+     * @throws CouldNotParseZoneFile When the export is not a zone file the parser understands.
      */
     public function exportedRecords(): array
     {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace OvhSdk\Data\Auth;
 
 use OvhSdk\Enums\CredentialState;
-use UnexpectedValueException;
+use OvhSdk\Exceptions\CouldNotReadResponse;
 
 /**
  * Schema auth.ApiCredentialRequest.
@@ -26,7 +26,7 @@ final readonly class CredentialRequest
         $consumerKey = $data['consumerKey'] ?? null;
 
         if (! \is_string($consumerKey) || $consumerKey === '') {
-            throw new UnexpectedValueException('OVH credential response is missing the consumerKey.');
+            throw CouldNotReadResponse::missingField('credential', 'consumerKey');
         }
 
         $state = $data['state'] ?? null;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use OvhSdk\Auth\ServiceAccount;
 use OvhSdk\Enums\Region;
 use OvhSdk\Exceptions\AuthenticationException;
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Requests\Auth\GetOAuth2Token;
 use OvhSdk\Requests\Auth\GetServerTime;
 use OvhSdk\Requests\Generic\GenericRequest;
@@ -84,3 +85,12 @@ it('neither signs nor syncs the clock in OAuth2 mode', function () {
     $ovh->getMockClient()->assertSentCount(0, GetServerTime::class);
     expect(sentRequest($ovh, GenericRequest::class)->headers()->get('X-Ovh-Signature'))->toBeNull();
 });
+
+it('refuses a token response without access token or lifetime', function (array $body, string $message) {
+    $ovh = ovh([GetOAuth2Token::class => MockResponse::make($body)], new ServiceAccount('client-id', 'client-secret'));
+
+    expect(fn () => $ovh->get('/me'))->toThrow(CouldNotReadResponse::class, $message);
+})->with([
+    'without access_token' => [['token_type' => 'Bearer', 'expires_in' => 3599], 'OVH OAuth2 token response is missing access_token.'],
+    'without expires_in' => [['access_token' => 'tok-1', 'token_type' => 'Bearer'], 'OVH OAuth2 token response is missing expires_in.'],
+]);

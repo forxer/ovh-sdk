@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace OvhSdk\Data\Auth;
 
-use InvalidArgumentException;
 use OvhSdk\Enums\HttpMethod;
+use OvhSdk\Exceptions\InvalidAccessRule;
 
 final readonly class AccessRule
 {
@@ -14,26 +14,27 @@ final readonly class AccessRule
     /**
      * Parse a rule written as "METHOD:/path", for example "GET:/domain/*".
      *
-     * @throws InvalidArgumentException
+     * @throws InvalidAccessRule
      */
     public static function fromString(string $rule): self
     {
         $separator = strpos($rule, ':');
 
         if ($separator === false) {
-            throw new InvalidArgumentException(\sprintf('Access rule "%s" must look like "METHOD:/path".', $rule));
+            throw InvalidAccessRule::missingSeparator($rule);
         }
 
-        $method = HttpMethod::tryFrom(strtoupper(substr($rule, 0, $separator)));
+        $methodName = substr($rule, 0, $separator);
+        $method = HttpMethod::tryFrom(strtoupper($methodName));
 
         if ($method === null) {
-            throw new InvalidArgumentException(\sprintf('Access rule "%s" has an unknown HTTP method.', $rule));
+            throw InvalidAccessRule::unknownMethod($rule, $methodName);
         }
 
         $path = substr($rule, $separator + 1);
 
         if ($path === '') {
-            throw new InvalidArgumentException(\sprintf('Access rule "%s" has an empty path.', $rule));
+            throw InvalidAccessRule::emptyPath($rule);
         }
 
         return new self($method, $path);

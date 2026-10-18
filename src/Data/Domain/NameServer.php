@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace OvhSdk\Data\Domain;
 
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Support\Fields;
-use UnexpectedValueException;
 
 /**
  * Schema domain.nameServer.NameServer.
@@ -21,7 +21,7 @@ final readonly class NameServer
     /**
      * @param  array<array-key, mixed>  $data
      *
-     * @throws UnexpectedValueException
+     * @throws CouldNotReadResponse
      */
     public static function fromArray(array $data): self
     {

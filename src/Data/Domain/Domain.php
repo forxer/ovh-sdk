@@ -11,9 +11,9 @@ use OvhSdk\Enums\DomainState;
 use OvhSdk\Enums\RenewalState;
 use OvhSdk\Enums\SuspensionState;
 use OvhSdk\Enums\TransferLockStatus;
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Support\Dates;
 use OvhSdk\Support\Fields;
-use UnexpectedValueException;
 
 /**
  * Schema domain.DomainService, reduced to the properties below: contacts, glue records, IAM metadata and the other
@@ -48,7 +48,7 @@ final readonly class Domain
     /**
      * @param  array<array-key, mixed>  $data
      *
-     * @throws UnexpectedValueException
+     * @throws CouldNotReadResponse
      */
     public static function fromArray(array $data): self
     {

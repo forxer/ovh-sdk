@@ -11,6 +11,7 @@ use OvhSdk\Enums\RenewalType;
 use OvhSdk\Enums\ServiceStatus;
 use OvhSdk\Enums\SuspensionState;
 use OvhSdk\Enums\TransferLockStatus;
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Exceptions\NotFoundException;
 use OvhSdk\Requests\Domain\GetDomain;
 use OvhSdk\Requests\Domain\GetDomainServiceInfos;
@@ -113,5 +114,5 @@ it('refuses a domain without the DNSSEC support flag', function () {
     $domains = ovh([GetDomain::class => MockResponse::make(array_diff_key(fixtureData('domain'), ['dnssecSupported' => true]))])->domain();
 
     expect(fn () => $domains->get('example.com'))
-        ->toThrow(UnexpectedValueException::class, 'OVH response field "dnssecSupported" must be a boolean.');
+        ->toThrow(CouldNotReadResponse::class, 'OVH response field "dnssecSupported" must be a boolean.');
 });

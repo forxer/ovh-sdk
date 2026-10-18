@@ -5,6 +5,8 @@ declare(strict_types=1);
 use OvhSdk\Data\Dns\ZoneTask;
 use OvhSdk\Enums\TaskFunction;
 use OvhSdk\Enums\TaskStatus;
+use OvhSdk\Exceptions\CouldNotReadResponse;
+use OvhSdk\Exceptions\CouldNotSendUnknownCase;
 use OvhSdk\Requests\Dns\GetZoneTask;
 use OvhSdk\Requests\Dns\ListZoneTasks;
 use Saloon\Enums\Method;
@@ -77,22 +79,22 @@ it('maps an unknown function or status to Unknown', function () {
         ->and($task->status)->toBe(TaskStatus::Unknown);
 });
 
-it('refuses to filter tasks on an unknown function or status', function (?TaskFunction $function, ?TaskStatus $status) {
+it('refuses to filter tasks on an unknown function or status', function (?TaskFunction $function, ?TaskStatus $status, string $message) {
     $ovh = ovh([ListZoneTasks::class => MockResponse::make([42]), GetZoneTask::class => MockResponse::make(fixtureData('zone-task'))]);
     $tasks = $ovh->domain()->zone('example.com')->tasks();
 
-    expect(fn () => $tasks->ids($function, $status))->toThrow(InvalidArgumentException::class)
-        ->and(fn () => $tasks->list($function, $status))->toThrow(InvalidArgumentException::class);
+    expect(fn () => $tasks->ids($function, $status))->toThrow(CouldNotSendUnknownCase::class, $message)
+        ->and(fn () => $tasks->list($function, $status))->toThrow(CouldNotSendUnknownCase::class, $message);
     $ovh->getMockClient()->assertNothingSent();
 })->with([
-    'function' => [TaskFunction::Unknown, null],
-    'status' => [null, TaskStatus::Unknown],
+    'function' => [TaskFunction::Unknown, null, 'OvhSdk\\Enums\\TaskFunction::Unknown cannot be sent to OVHcloud'],
+    'status' => [null, TaskStatus::Unknown, 'OvhSdk\\Enums\\TaskStatus::Unknown cannot be sent to OVHcloud'],
 ]);
 
 it('refuses a task that does not follow the schema', function (array $data, string $message) {
     $tasks = ovh([GetZoneTask::class => MockResponse::make($data)])->domain()->zone('example.com')->tasks();
 
-    expect(fn () => $tasks->get(42))->toThrow(UnexpectedValueException::class, $message);
+    expect(fn () => $tasks->get(42))->toThrow(CouldNotReadResponse::class, $message);
 })->with([
     'todo date missing' => [array_diff_key(fixtureData('zone-task'), ['todoDate' => true]), 'OVH response field "todoDate" must be a string.'],
     'done date of the wrong type' => [['doneDate' => 1700000000] + fixtureData('zone-task'), 'OVH response field "doneDate" must be a string or null.'],
@@ -102,5 +104,5 @@ it('refuses a task that does not follow the schema', function (array $data, stri
 it('refuses a task list that is not a list of integers', function () {
     $tasks = ovh([ListZoneTasks::class => MockResponse::make(['42'])])->domain()->zone('example.com')->tasks();
 
-    expect(fn () => $tasks->ids())->toThrow(UnexpectedValueException::class, 'OVH zone task list response holds a value that is not an integer.');
+    expect(fn () => $tasks->ids())->toThrow(CouldNotReadResponse::class, 'OVH zone task list response holds a value that is not an integer.');
 });

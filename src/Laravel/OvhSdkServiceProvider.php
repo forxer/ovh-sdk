@@ -8,11 +8,11 @@ use Illuminate\Contracts\Cache\Factory as CacheFactory;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\ServiceProvider;
-use InvalidArgumentException;
 use OvhSdk\Auth\ApplicationKeys;
 use OvhSdk\Auth\ServiceAccount;
 use OvhSdk\Enums\Region;
 use OvhSdk\Laravel\Commands\RequestConsumerKeyCommand;
+use OvhSdk\Laravel\Exceptions\InvalidConfiguration;
 use OvhSdk\Ovh;
 use Saloon\Contracts\Authenticator;
 
@@ -39,7 +39,7 @@ final class OvhSdkServiceProvider extends ServiceProvider
     /**
      * Build the connector from the configuration read at resolution time.
      *
-     * @throws InvalidArgumentException when the configuration is incomplete or wrong
+     * @throws InvalidConfiguration when the configuration is incomplete or wrong
      */
     private static function makeConnector(Container $app): Ovh
     {
@@ -59,10 +59,7 @@ final class OvhSdkServiceProvider extends ServiceProvider
         $region = \is_string($value) ? Region::tryFrom($value) : null;
 
         if ($region === null) {
-            throw new InvalidArgumentException(\sprintf(
-                'Unknown OVHcloud region: set OVH_REGION to one of %s.',
-                implode(', ', array_map(static fn (Region $case): string => '"'.$case->value.'"', Region::cases())),
-            ));
+            throw InvalidConfiguration::unknownRegion();
         }
 
         return $region;
@@ -80,17 +77,13 @@ final class OvhSdkServiceProvider extends ServiceProvider
                 self::required($config, 'service_account.client_id', 'OVH_CLIENT_ID'),
                 self::required($config, 'service_account.client_secret', 'OVH_CLIENT_SECRET'),
             ),
-            default => throw new InvalidArgumentException('Unknown OVHcloud authentication mode: set OVH_AUTH to "application_keys" or "service_account".'),
+            default => throw InvalidConfiguration::unknownAuthMode(),
         };
     }
 
     private static function required(Config $config, string $key, string $variable): string
     {
-        return self::optional($config, $key) ?? throw new InvalidArgumentException(\sprintf(
-            'Missing OVHcloud credential: set %s (configuration key "ovh-sdk.%s").',
-            $variable,
-            $key,
-        ));
+        return self::optional($config, $key) ?? throw InvalidConfiguration::missingCredential($variable, $key);
     }
 
     private static function optional(Config $config, string $key): ?string

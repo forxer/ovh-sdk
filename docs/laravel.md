@@ -58,7 +58,7 @@ OVH_CLIENT_SECRET=your-client-secret
 
 See [Authentication](./authentication.md) to get these credentials.
 
-The connector is built when it is first resolved, not when the application boots. An unknown region or mode, or a missing required credential, then throws an `InvalidArgumentException` whose message names the variable to set; an empty variable counts as missing. The message never contains a secret value.
+The connector is built when it is first resolved, not when the application boots. An unknown region or mode, or a missing required credential, then throws an `OvhSdk\Laravel\Exceptions\InvalidConfiguration` (an `InvalidArgumentException`) whose message names the variable to set; an empty variable counts as missing. The message never contains a secret value.
 
 Usage
 -----

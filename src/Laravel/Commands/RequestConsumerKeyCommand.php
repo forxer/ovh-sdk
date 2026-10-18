@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace OvhSdk\Laravel\Commands;
 
 use Illuminate\Console\Command;
-use InvalidArgumentException;
-use LogicException;
 use OvhSdk\Data\Auth\AccessRule;
+use OvhSdk\Exceptions\CouldNotRequestConsumerKey;
+use OvhSdk\Exceptions\InvalidAccessRule;
 use OvhSdk\Ovh;
 
 final class RequestConsumerKeyCommand extends Command
@@ -22,8 +22,7 @@ final class RequestConsumerKeyCommand extends Command
     {
         try {
             $credential = $ovh->requestConsumerKey($this->accessRules(), $this->redirection());
-        } catch (InvalidArgumentException|LogicException $exception) {
-            // InvalidArgumentException: malformed rule. LogicException: connector without application keys.
+        } catch (InvalidAccessRule|CouldNotRequestConsumerKey $exception) {
             $this->components->error($exception->getMessage());
 
             return self::FAILURE;
@@ -48,7 +47,7 @@ final class RequestConsumerKeyCommand extends Command
     /**
      * @return list<AccessRule>
      *
-     * @throws InvalidArgumentException
+     * @throws InvalidAccessRule
      */
     private function accessRules(): array
     {

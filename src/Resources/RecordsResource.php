@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace OvhSdk\Resources;
 
-use InvalidArgumentException;
 use OvhSdk\Data\Dns\Record;
 use OvhSdk\Enums\RecordType;
+use OvhSdk\Exceptions\CouldNotSendUnknownCase;
+use OvhSdk\Exceptions\CouldNotUpdateRecord;
 use OvhSdk\Requests\Dns\CreateRecord;
 use OvhSdk\Requests\Dns\DeleteRecord;
 use OvhSdk\Requests\Dns\GetRecord;
@@ -26,7 +27,7 @@ final class RecordsResource extends Resource
      *
      * @return list<int>
      *
-     * @throws InvalidArgumentException When $type is RecordType::Unknown.
+     * @throws CouldNotSendUnknownCase When $type is RecordType::Unknown.
      */
     public function ids(?RecordType $type = null, ?string $subDomain = null): array
     {
@@ -41,7 +42,7 @@ final class RecordsResource extends Resource
      *
      * @return list<Record>
      *
-     * @throws InvalidArgumentException When $type is RecordType::Unknown.
+     * @throws CouldNotSendUnknownCase When $type is RecordType::Unknown.
      */
     public function list(?RecordType $type = null, ?string $subDomain = null): array
     {
@@ -61,7 +62,7 @@ final class RecordsResource extends Resource
     }
 
     /**
-     * @throws InvalidArgumentException When $type is RecordType::Unknown.
+     * @throws CouldNotSendUnknownCase When $type is RecordType::Unknown.
      */
     public function create(RecordType $type, string $target, ?string $subDomain = null, ?int $ttl = null): Record
     {
@@ -76,7 +77,7 @@ final class RecordsResource extends Resource
     /**
      * Updates the given fields only. An empty $subDomain targets the zone root and is sent as such.
      *
-     * @throws InvalidArgumentException When no field is given.
+     * @throws CouldNotUpdateRecord When no field is given.
      */
     public function update(int $id, ?string $target = null, ?string $subDomain = null, ?int $ttl = null): void
     {
@@ -86,7 +87,7 @@ final class RecordsResource extends Resource
         );
 
         if ($changes === []) {
-            throw new InvalidArgumentException('A record update needs at least one of target, subDomain or ttl.');
+            throw CouldNotUpdateRecord::withoutChanges($this->zoneName, $id);
         }
 
         $this->connector->send(new UpdateRecord($this->zoneName, $id, $changes));
@@ -100,7 +101,7 @@ final class RecordsResource extends Resource
     private static function assertKnownType(?RecordType $type): void
     {
         if ($type === RecordType::Unknown) {
-            throw new InvalidArgumentException('RecordType::Unknown cannot be sent to OVHcloud.');
+            throw CouldNotSendUnknownCase::of($type);
         }
     }
 }

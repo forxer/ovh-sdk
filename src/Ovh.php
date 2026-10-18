@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace OvhSdk;
 
-use LogicException;
 use OvhSdk\Auth\ApplicationKeys;
 use OvhSdk\Data\Auth\AccessRule;
 use OvhSdk\Data\Auth\CredentialRequest;
 use OvhSdk\Enums\Region;
+use OvhSdk\Exceptions\CouldNotRequestConsumerKey;
 use OvhSdk\Exceptions\OvhException;
 use OvhSdk\Requests\Auth\GetServerTime;
 use OvhSdk\Requests\Auth\RequestCredential;
@@ -113,13 +113,15 @@ final class Ovh extends Connector
      * Only the application key is sent, as in the official delegation guide.
      *
      * @param  list<AccessRule>  $accessRules
+     *
+     * @throws CouldNotRequestConsumerKey When the connector does not hold ApplicationKeys.
      */
     public function requestConsumerKey(array $accessRules, ?string $redirection = null): CredentialRequest
     {
         $keys = $this->getAuthenticator();
 
         if (! $keys instanceof ApplicationKeys) {
-            throw new LogicException(\sprintf('Requesting a consumer key needs %s credentials.', ApplicationKeys::class));
+            throw CouldNotRequestConsumerKey::withoutApplicationKeys($keys);
         }
 
         $request = new RequestCredential($accessRules, $redirection);

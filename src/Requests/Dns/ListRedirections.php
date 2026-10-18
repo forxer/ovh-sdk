@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace OvhSdk\Requests\Dns;
 
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Requests\OvhRequest;
 use Saloon\Enums\Method;
 use Saloon\Http\Response;
-use UnexpectedValueException;
 
 /**
  * Identifiers of the web redirections of a DNS zone, optionally filtered by sub-domain.
@@ -21,18 +21,18 @@ final class ListRedirections extends OvhRequest
     /**
      * @return list<int>
      *
-     * @throws UnexpectedValueException
+     * @throws CouldNotReadResponse
      */
     public function createDtoFromResponse(Response $response): array
     {
         $ids = $response->json();
 
         if (! array_is_list($ids)) {
-            throw new UnexpectedValueException('OVH redirection list response is not a list.');
+            throw CouldNotReadResponse::notAList('redirection list');
         }
 
         return array_map(
-            static fn (mixed $id): int => \is_int($id) ? $id : throw new UnexpectedValueException('OVH redirection list response holds a value that is not an integer.'),
+            static fn (mixed $id): int => \is_int($id) ? $id : throw CouldNotReadResponse::invalidListItem('redirection list', 'an integer'),
             $ids,
         );
     }

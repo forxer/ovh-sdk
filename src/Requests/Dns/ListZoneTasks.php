@@ -6,10 +6,10 @@ namespace OvhSdk\Requests\Dns;
 
 use OvhSdk\Enums\TaskFunction;
 use OvhSdk\Enums\TaskStatus;
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Requests\OvhRequest;
 use Saloon\Enums\Method;
 use Saloon\Http\Response;
-use UnexpectedValueException;
 
 /**
  * Identifiers of the tasks of a DNS zone, optionally filtered by function and status.
@@ -27,18 +27,18 @@ final class ListZoneTasks extends OvhRequest
     /**
      * @return list<int>
      *
-     * @throws UnexpectedValueException
+     * @throws CouldNotReadResponse
      */
     public function createDtoFromResponse(Response $response): array
     {
         $ids = $response->json();
 
         if (! array_is_list($ids)) {
-            throw new UnexpectedValueException('OVH zone task list response is not a list.');
+            throw CouldNotReadResponse::notAList('zone task list');
         }
 
         return array_map(
-            static fn (mixed $id): int => \is_int($id) ? $id : throw new UnexpectedValueException('OVH zone task list response holds a value that is not an integer.'),
+            static fn (mixed $id): int => \is_int($id) ? $id : throw CouldNotReadResponse::invalidListItem('zone task list', 'an integer'),
             $ids,
         );
     }

@@ -7,6 +7,9 @@ use OvhSdk\Auth\ServiceAccount;
 use OvhSdk\Data\Auth\AccessRule;
 use OvhSdk\Enums\CredentialState;
 use OvhSdk\Enums\HttpMethod;
+use OvhSdk\Exceptions\CouldNotReadResponse;
+use OvhSdk\Exceptions\CouldNotRequestConsumerKey;
+use OvhSdk\Exceptions\InvalidAccessRule;
 use OvhSdk\Requests\Auth\RequestCredential;
 use Saloon\Http\Faking\MockResponse;
 
@@ -37,12 +40,16 @@ it('requests a consumer key with the application key only', function () {
 
 it('refuses to request a consumer key with a service account', function () {
     expect(fn () => ovh([], new ServiceAccount('client-id', 'client-secret'))->requestConsumerKey([AccessRule::fromString('GET:/me')]))
-        ->toThrow(LogicException::class);
+        ->toThrow(CouldNotRequestConsumerKey::class, 'Requesting a consumer key needs OvhSdk\\Auth\\ApplicationKeys credentials, the connector has OvhSdk\\Auth\\ServiceAccount.');
 });
 
-it('rejects malformed access rules', function (string $rule) {
-    expect(fn () => AccessRule::fromString($rule))->toThrow(InvalidArgumentException::class);
-})->with(['/domain', 'FETCH:/domain', 'GET:']);
+it('rejects malformed access rules', function (string $rule, string $message) {
+    expect(fn () => AccessRule::fromString($rule))->toThrow(InvalidAccessRule::class, $message);
+})->with([
+    'without separator' => ['/domain', 'Access rule "/domain" must look like "METHOD:/path".'],
+    'with an unknown method' => ['FETCH:/domain', 'Access rule "FETCH:/domain" has an unknown HTTP method "FETCH": use one of GET, POST, PUT, PATCH, DELETE.'],
+    'with an empty path' => ['GET:', 'Access rule "GET:" has an empty path.'],
+]);
 
 it('resolves unknown enum values instead of failing', function () {
     expect(CredentialState::fromOvh('somethingNew'))->toBe(CredentialState::Unknown)
@@ -54,5 +61,5 @@ it('rejects a credential response without consumer key', function () {
     $ovh = ovh([RequestCredential::class => MockResponse::make(['state' => 'pendingValidation'])], new ApplicationKeys('app-key', 'app-secret'));
 
     expect(fn () => $ovh->requestConsumerKey([AccessRule::fromString('GET:/me')]))
-        ->toThrow(UnexpectedValueException::class);
+        ->toThrow(CouldNotReadResponse::class, 'OVH credential response is missing consumerKey.');
 });

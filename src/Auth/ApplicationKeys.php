@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OvhSdk\Auth;
 
-use LogicException;
+use OvhSdk\Exceptions\CouldNotAuthenticateRequest;
 use OvhSdk\Ovh;
 use Saloon\Contracts\Authenticator;
 use Saloon\Http\PendingRequest;
@@ -23,7 +23,7 @@ final readonly class ApplicationKeys implements Authenticator
         $connector = $pendingRequest->getConnector();
 
         if (! $connector instanceof Ovh) {
-            throw new LogicException(\sprintf('%s can only authenticate requests sent through %s.', self::class, Ovh::class));
+            throw CouldNotAuthenticateRequest::outsideOvhConnector($this, $connector);
         }
 
         $headers = $pendingRequest->headers();

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace OvhSdk\Data\Dns;
 
 use OvhSdk\Enums\RecordType;
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Support\Fields;
-use UnexpectedValueException;
 
 /**
  * Schema domain.zone.Record. The "fieldType" property is exposed as $type.
@@ -25,7 +25,7 @@ final readonly class Record
     /**
      * @param  array<array-key, mixed>  $data
      *
-     * @throws UnexpectedValueException
+     * @throws CouldNotReadResponse
      */
     public static function fromArray(array $data): self
     {

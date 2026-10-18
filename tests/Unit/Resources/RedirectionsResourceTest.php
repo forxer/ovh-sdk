@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use OvhSdk\Data\Dns\Redirection;
 use OvhSdk\Enums\RedirectionType;
+use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Requests\Dns\GetRedirection;
 use OvhSdk\Requests\Dns\ListRedirections;
 use Saloon\Enums\Method;
@@ -75,7 +76,7 @@ it('maps an unknown redirection type to Unknown', function () {
 it('refuses a redirection that does not follow the schema', function (array $data, string $message) {
     $redirections = ovh([GetRedirection::class => MockResponse::make($data)])->domain()->zone('example.com')->redirections();
 
-    expect(fn () => $redirections->get(42))->toThrow(UnexpectedValueException::class, $message);
+    expect(fn () => $redirections->get(42))->toThrow(CouldNotReadResponse::class, $message);
 })->with([
     'id of the wrong type' => [['id' => '42'] + fixtureData('redirection'), 'OVH response field "id" must be an integer.'],
     'target missing' => [array_diff_key(fixtureData('redirection'), ['target' => true]), 'OVH response field "target" must be a string.'],
@@ -85,7 +86,7 @@ it('refuses a redirection that does not follow the schema', function (array $dat
 it('refuses a redirection list that is not a list of integers', function (mixed $body, string $message) {
     $redirections = ovh([ListRedirections::class => MockResponse::make($body)])->domain()->zone('example.com')->redirections();
 
-    expect(fn () => $redirections->ids())->toThrow(UnexpectedValueException::class, $message);
+    expect(fn () => $redirections->ids())->toThrow(CouldNotReadResponse::class, $message);
 })->with([
     'an object' => [['id' => 42], 'OVH redirection list response is not a list.'],
     'a string id' => [['42'], 'OVH redirection list response holds a value that is not an integer.'],
