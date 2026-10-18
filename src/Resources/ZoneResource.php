@@ -93,4 +93,9 @@ final class ZoneResource extends Resource
     {
         return new RedirectionsResource($this->connector, $this->zoneName);
     }
+
+    public function tasks(): ZoneTasksResource
+    {
+        return new ZoneTasksResource($this->connector, $this->zoneName);
+    }
 }

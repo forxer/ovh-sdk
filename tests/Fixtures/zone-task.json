@@ -1,0 +1,13 @@
+{
+    "id": 42,
+    "function": "ZoneRefresh",
+    "status": "done",
+    "comment": null,
+    "creationDate": "2026-10-08T09:28:30+02:00",
+    "todoDate": "2026-10-08T09:28:30+02:00",
+    "doneDate": "2026-10-08T09:28:33+02:00",
+    "lastUpdate": "2026-10-08T09:28:33+02:00",
+    "canAccelerate": false,
+    "canCancel": false,
+    "canRelaunch": false
+}
