@@ -30,7 +30,7 @@ composer refactor   # Rector
 - `src/Exceptions/`: `OvhException` (extends Saloon `RequestException`, exposes `errorClass` and `queryId`) and one subclass per status (400, 401, 403, 404, 409, 429, 5xx), built by `OvhException::fromResponse()`.
 - `src/Laravel/`: the only place allowed to use `Illuminate\` (arch test). Service provider (singleton `OvhSdk\Ovh` built from `config/ovh-sdk.php` at resolution time), facade with `fake()`, `ovh:consumer-key` command.
 - `src/Requests/`: one Saloon request per OVH route, extending `OvhRequest` (which prefixes `path()` with the API branch) and building its DTO in `createDtoFromResponse()`. `Generic/` holds the untyped requests behind `Ovh::get()` and friends. Exception: `Auth/GetOAuth2Token` extends `Saloon\Http\Request` directly, as it targets the OAuth2 token endpoint of the region and not the API (absolute URL with `allowBaseUrlOverride`).
-- `src/Resources/`: the fluent API (`DomainResource`, `ZonesResource`, `ZoneResource`, `RecordsResource`), extending `Resource`.
+- `src/Resources/`: the fluent API (`DomainResource`, `ZonesResource`, `ZoneResource`, `RecordsResource`, `RedirectionsResource`), extending `Resource`.
 - `src/Support/`: internal helpers: `Fields` (typed reads of a decoded JSON object), `Dates` (parsing of `date` and `datetime` values), `ZoneFileParser` (behind `ZoneFile::parse()`), `SystemClock`.
 
 ### Conventions set while building

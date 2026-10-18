@@ -88,4 +88,9 @@ final class ZoneResource extends Resource
     {
         return new RecordsResource($this->connector, $this->zoneName);
     }
+
+    public function redirections(): RedirectionsResource
+    {
+        return new RedirectionsResource($this->connector, $this->zoneName);
+    }
 }
