@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace OvhSdk\Resources;
 
 use OvhSdk\Data\Dns\Zone;
+use OvhSdk\Data\Dns\ZoneStatus;
 use OvhSdk\Requests\Dns\GetZone;
+use OvhSdk\Requests\Dns\GetZoneStatus;
 use OvhSdk\Requests\Dns\RefreshZone;
 use Saloon\Http\Connector;
 
@@ -22,6 +24,14 @@ final class ZoneResource extends Resource
         \assert($zone instanceof Zone);
 
         return $zone;
+    }
+
+    public function status(): ZoneStatus
+    {
+        $status = $this->connector->send(new GetZoneStatus($this->zoneName))->dto();
+        \assert($status instanceof ZoneStatus);
+
+        return $status;
     }
 
     /**
