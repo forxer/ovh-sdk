@@ -6,6 +6,7 @@ namespace OvhSdk\Resources;
 
 use OvhSdk\Data\Dns\Zone;
 use OvhSdk\Data\Dns\ZoneStatus;
+use OvhSdk\Requests\Dns\ExportZone;
 use OvhSdk\Requests\Dns\GetZone;
 use OvhSdk\Requests\Dns\GetZoneStatus;
 use OvhSdk\Requests\Dns\RefreshZone;
@@ -32,6 +33,17 @@ final class ZoneResource extends Resource
         \assert($status instanceof ZoneStatus);
 
         return $status;
+    }
+
+    /**
+     * Content of the zone, as a BIND zone file, in a single call.
+     */
+    public function export(): string
+    {
+        $zoneFile = $this->connector->send(new ExportZone($this->zoneName))->dto();
+        \assert(\is_string($zoneFile));
+
+        return $zoneFile;
     }
 
     /**

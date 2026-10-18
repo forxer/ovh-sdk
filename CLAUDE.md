@@ -37,6 +37,7 @@ composer refactor   # Rector
 - DTO factories read fields through `Support\Fields` (`@internal`). A required field that is missing or of the wrong type, or a nullable field of the wrong type, throws an `UnexpectedValueException` rather than hydrating half a DTO. Enum fields go through `Fields::enumValue()` and never throw.
 - `ids()` makes the single list call and returns identifiers; `list()` hydrates every element through `Resource::sendAll()`, a Saloon pool with `Resource::CONCURRENCY` (5) requests in flight. `sendAll()` keeps the order of the requests, waits for every request, and when some fail throws the exception of the earliest request in the list (never a partial list).
 - `RecordType::Unknown` is refused before sending (`InvalidArgumentException`), as is a record `update()` without any field. An empty `subDomain` is sent as is (zone root).
+- A route answering a JSON scalar is decoded from `body()` in `createDtoFromResponse()`: Saloon's `Response::json()` only accepts arrays and throws a `TypeError` otherwise (`ExportZone`).
 - Errors raised by misuse are `InvalidArgumentException` or `LogicException`; Laravel configuration errors name the environment variable, never a secret value.
 
 The user documentation is in `docs/` (front-matter `title` and `order`, underlined H1 and H2, relative links), with `README.md`, `CHANGELOG.md` and `UPGRADE.md` at the root: keep it in sync with `src/` when the public API changes.

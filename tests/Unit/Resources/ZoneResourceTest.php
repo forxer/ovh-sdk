@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use OvhSdk\Data\Dns\Zone;
+use OvhSdk\Requests\Dns\ExportZone;
 use OvhSdk\Requests\Dns\GetZone;
 use OvhSdk\Requests\Dns\GetZoneStatus;
 use OvhSdk\Requests\Dns\ListZones;
@@ -91,3 +92,20 @@ it('refuses a zone status that does not follow the schema', function (array $dat
     'errors holding an object' => [['errors' => [['message' => 'x']]] + fixtureData('zone-status'), 'OVH response field "errors" must be a list of strings or null.'],
     'warnings of the wrong type' => [['warnings' => 'none'] + fixtureData('zone-status'), 'OVH response field "warnings" must be a list of strings or null.'],
 ]);
+
+it('exports a zone as a BIND zone file', function () {
+    $zoneFile = (string) file_get_contents(fixture('zone-export.txt'));
+    // OVHcloud sends the zone file as a JSON string: between double quotes, with escaped line breaks.
+    $body = json_encode($zoneFile, JSON_THROW_ON_ERROR);
+    $ovh = ovh([ExportZone::class => MockResponse::make($body)]);
+
+    expect($body)->toStartWith('"$TTL 3600\\n@')
+        ->and($ovh->domain()->zone('example.com')->export())->toBe($zoneFile)
+        ->and((string) sentRequest($ovh, ExportZone::class)->getUri())->toBe('https://api.eu.ovhcloud.com/v1/domain/zone/example.com/export');
+});
+
+it('refuses a zone export that is not a JSON string', function () {
+    $zone = ovh([ExportZone::class => MockResponse::make(['$TTL 3600'])])->domain()->zone('example.com');
+
+    expect(fn () => $zone->export())->toThrow(UnexpectedValueException::class, 'OVH zone export response is not a string.');
+});
