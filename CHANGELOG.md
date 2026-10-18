@@ -1,8 +1,10 @@
 CHANGELOG
 =========
 
-Unreleased
-----------
+0.1.0 (2026-10-18)
+------------------
+
+First release.
 
 - Saloon connector `OvhSdk\Ovh` with the EU, CA and US regions, and generic `get()`, `post()`, `put()` and `delete()` calls on any endpoint
 - Typed exceptions for OVHcloud errors, exposing the OVH error class and the query id
