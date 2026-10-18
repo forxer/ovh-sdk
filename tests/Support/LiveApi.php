@@ -122,7 +122,7 @@ final class LiveApi
             '#^/v1/auth/(time|currentCredential)$#',
             '#^/v1/domain(/zone)?$#',
             "#^/v1/domain/{$name}(/serviceInfos)?$#",
-            "#^/v1/domain/zone/{$name}(/status|/export|/record(/\\d+)?)?$#",
+            "#^/v1/domain/zone/{$name}(/status|/export|/history|/(record|redirection|task)(/\\d+)?)?$#",
         ];
 
         return static function (PendingRequest $pending) use ($allowed): void {

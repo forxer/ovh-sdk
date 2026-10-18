@@ -25,6 +25,11 @@ it('lets the live tests read the test domain and zone', function (string $path) 
     '/domain/zone/example.com/export',
     '/domain/zone/example.com/record',
     '/domain/zone/example.com/record/42',
+    '/domain/zone/example.com/redirection',
+    '/domain/zone/example.com/redirection/42',
+    '/domain/zone/example.com/history',
+    '/domain/zone/example.com/task',
+    '/domain/zone/example.com/task/42',
 ]);
 
 it('refuses any other request before sending it', function (Closure $call) {
@@ -40,6 +45,11 @@ it('refuses any other request before sending it', function (Closure $call) {
     'another domain' => [fn ($ovh) => $ovh->get('/domain/example.org')],
     'another zone' => [fn ($ovh) => $ovh->get('/domain/zone/example.org/export')],
     'another route' => [fn ($ovh) => $ovh->get('/me')],
+    'a restore point' => [fn ($ovh) => $ovh->get('/domain/zone/example.com/history/2026-10-08T09:28:33.070330+02:00')],
+    'a restore' => [fn ($ovh) => $ovh->post('/domain/zone/example.com/history/2026-10-08T09:28:33.070330+02:00/restore')],
+    'a task acceleration' => [fn ($ovh) => $ovh->post('/domain/zone/example.com/task/42/accelerate')],
+    'a zone import' => [fn ($ovh) => $ovh->post('/domain/zone/example.com/import', ['zoneFile' => '$TTL 3600'])],
+    'a zone reset' => [fn ($ovh) => $ovh->post('/domain/zone/example.com/reset')],
 ]);
 
 it('accepts the access rules it requests for the consumer key', function () {

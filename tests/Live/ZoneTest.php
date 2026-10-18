@@ -2,7 +2,14 @@
 
 declare(strict_types=1);
 
+use OvhSdk\Data\Dns\Record;
+use OvhSdk\Data\Dns\Redirection;
+use OvhSdk\Data\Dns\ZoneFileRecord;
+use OvhSdk\Data\Dns\ZoneTask;
 use OvhSdk\Enums\RecordType;
+use OvhSdk\Enums\RedirectionType;
+use OvhSdk\Enums\TaskFunction;
+use OvhSdk\Enums\TaskStatus;
 use Tests\Support\LiveApi;
 
 beforeEach(function () {
@@ -42,4 +49,61 @@ it('reads a record of the test zone without an unknown type', function () {
 
     expect($record->zone)->toBe(LiveApi::domain())
         ->and($record->type)->not->toBe(RecordType::Unknown);
+});
+
+it('splits the export of the test zone into as many records as the record API lists', function () {
+    $zone = LiveApi::ovh()->domain()->zone(LiveApi::domain());
+    $exported = $zone->exportedRecords();
+
+    expect($exported)->toHaveCount(count($zone->records()->ids()))
+        ->and(array_filter($exported, fn (ZoneFileRecord $record) => $record->type === RecordType::Unknown))->toBe([]);
+});
+
+it('writes the pseudo-types of OVHcloud as TXT records in the export of the test zone', function () {
+    $zone = LiveApi::ovh()->domain()->zone(LiveApi::domain());
+    $count = function (array $types): array {
+        $counts = array_count_values($types);
+        ksort($counts);
+
+        return $counts;
+    };
+    $pseudoTypes = [RecordType::DKIM, RecordType::DMARC, RecordType::SPF];
+
+    // One call per record: the test zone is small.
+    $fromApi = array_map(fn (Record $record) => in_array($record->type, $pseudoTypes, true) ? 'TXT' : $record->type->value, $zone->records()->list());
+    $fromExport = array_map(fn (ZoneFileRecord $record) => $record->type->value, $zone->exportedRecords());
+
+    expect($count($fromExport))->toBe($count($fromApi));
+});
+
+it('reads the web redirections of the test zone without an unknown type', function () {
+    $redirections = LiveApi::ovh()->domain()->zone(LiveApi::domain())->redirections()->list();
+
+    expect(array_filter($redirections, fn (Redirection $redirection) => $redirection->type === RedirectionType::Unknown))->toBe([]);
+});
+
+it('reads the history of the test zone, oldest first, and filters it', function () {
+    $zone = LiveApi::ovh()->domain()->zone(LiveApi::domain());
+    $history = $zone->history();
+    $sorted = $history;
+    usort($sorted, fn (DateTimeImmutable $a, DateTimeImmutable $b) => $a <=> $b);
+
+    expect($history)->toBe($sorted);
+
+    if ($history === []) {
+        return;
+    }
+
+    // The bounds are sent with their microseconds: OVHcloud must accept them, and answer within them.
+    $first = $history[0];
+    $last = $history[count($history) - 1];
+    $filtered = $zone->history(from: $first, to: $last);
+
+    expect(array_filter($filtered, fn (DateTimeImmutable $date) => $date < $first || $date > $last))->toBe([]);
+});
+
+it('reads the tasks of the test zone without an unknown function or status', function () {
+    $tasks = LiveApi::ovh()->domain()->zone(LiveApi::domain())->tasks()->list();
+
+    expect(array_filter($tasks, fn (ZoneTask $task) => $task->function === TaskFunction::Unknown || $task->status === TaskStatus::Unknown))->toBe([]);
 });
