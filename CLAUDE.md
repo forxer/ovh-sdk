@@ -39,6 +39,7 @@ composer refactor   # Rector
 - `ids()` makes the single list call and returns identifiers; `list()` hydrates every element through `Resource::sendAll()`, a Saloon pool with `Resource::CONCURRENCY` (5) requests in flight. `sendAll()` keeps the order of the requests, waits for every request, and when some fail throws the exception of the earliest request in the list (never a partial list).
 - `RecordType::Unknown` is refused before sending (`InvalidArgumentException`), as is a record `update()` without any field. An empty `subDomain` is sent as is (zone root).
 - `ZoneFile::parse()` keeps the data of a record as written (fields joined by one space, TXT quotes and escapes kept), leaves the SOA out, gives a `null` TTL to a record without one (the record API reads `0`), and throws an `UnexpectedValueException` naming the line on what it cannot read. In the zone file, the `DKIM`, `DMARC` and `SPF` pseudo-types of OVH are `TXT` records.
+- `zone()->history()` sorts the dates oldest first, as OVH guarantees no order, and sends its bounds with their microseconds.
 - A route answering a JSON scalar is decoded from `body()` in `createDtoFromResponse()`: Saloon's `Response::json()` only accepts arrays and throws a `TypeError` otherwise (`ExportZone`).
 - Errors raised by misuse are `InvalidArgumentException` or `LogicException`; Laravel configuration errors name the environment variable, never a secret value.
 

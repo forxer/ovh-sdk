@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace OvhSdk\Resources;
 
+use DateTimeImmutable;
+use DateTimeInterface;
 use OvhSdk\Data\Dns\Zone;
 use OvhSdk\Data\Dns\ZoneFile;
 use OvhSdk\Data\Dns\ZoneFileRecord;
@@ -11,6 +13,7 @@ use OvhSdk\Data\Dns\ZoneStatus;
 use OvhSdk\Requests\Dns\ExportZone;
 use OvhSdk\Requests\Dns\GetZone;
 use OvhSdk\Requests\Dns\GetZoneStatus;
+use OvhSdk\Requests\Dns\ListZoneHistory;
 use OvhSdk\Requests\Dns\RefreshZone;
 use Saloon\Http\Connector;
 use UnexpectedValueException;
@@ -60,6 +63,17 @@ final class ZoneResource extends Resource
     public function exportedRecords(): array
     {
         return ZoneFile::parse($this->export(), $this->zoneName)->records;
+    }
+
+    /**
+     * Creation dates of the restore points of the zone, oldest first, in a single call.
+     *
+     * @return list<DateTimeImmutable>
+     */
+    public function history(?DateTimeInterface $from = null, ?DateTimeInterface $to = null): array
+    {
+        /** @var list<DateTimeImmutable> */
+        return $this->connector->send(new ListZoneHistory($this->zoneName, $from, $to))->dto();
     }
 
     /**

@@ -8,6 +8,7 @@ use OvhSdk\Enums\RecordType;
 use OvhSdk\Requests\Dns\ExportZone;
 use OvhSdk\Requests\Dns\GetZone;
 use OvhSdk\Requests\Dns\GetZoneStatus;
+use OvhSdk\Requests\Dns\ListZoneHistory;
 use OvhSdk\Requests\Dns\ListZones;
 use OvhSdk\Requests\Dns\RefreshZone;
 use Saloon\Enums\Method;
@@ -121,3 +122,45 @@ it('splits the export of a zone into records, in a single call', function () {
         ->and($records[6])->toEqual(new ZoneFileRecord('app', 3600, RecordType::CNAME, 'www.example.com.'));
     $ovh->getMockClient()->assertSentCount(1);
 });
+
+it('reads the history of a zone, oldest first', function () {
+    $ovh = ovh([ListZoneHistory::class => MockResponse::make([
+        '2026-10-08T09:28:33.070330+02:00',
+        '2026-10-01T10:00:00.000001+02:00',
+        '2026-10-08T07:28:33.070331+00:00',
+    ])]);
+    $history = $ovh->domain()->zone('example.com')->history();
+
+    expect(array_map(fn (DateTimeImmutable $date) => $date->format('Y-m-d\TH:i:s.uP'), $history))->toBe([
+        '2026-10-01T10:00:00.000001+02:00',
+        '2026-10-08T09:28:33.070330+02:00',
+        '2026-10-08T07:28:33.070331+00:00',
+    ])
+        ->and((string) sentRequest($ovh, ListZoneHistory::class)->getUri())->toBe('https://api.eu.ovhcloud.com/v1/domain/zone/example.com/history');
+});
+
+it('filters the history of a zone between two dates', function () {
+    $ovh = ovh([ListZoneHistory::class => MockResponse::make([])]);
+    $history = $ovh->domain()->zone('example.com')->history(
+        from: new DateTimeImmutable('2026-10-01T00:00:00+02:00'),
+        to: new DateTime('2026-10-08T09:28:33.070330+02:00'),
+    );
+    $sent = sentRequest($ovh, ListZoneHistory::class);
+
+    expect($history)->toBe([])
+        ->and($sent->query()->all())->toBe([
+            'creationDate.from' => '2026-10-01T00:00:00.000000+02:00',
+            'creationDate.to' => '2026-10-08T09:28:33.070330+02:00',
+        ])
+        ->and((string) $sent->getUri())->toBe('https://api.eu.ovhcloud.com/v1/domain/zone/example.com/history?creationDate.from=2026-10-01T00%3A00%3A00.000000%2B02%3A00&creationDate.to=2026-10-08T09%3A28%3A33.070330%2B02%3A00');
+});
+
+it('refuses a zone history that is not a list of dates', function (mixed $body, string $message) {
+    $zone = ovh([ListZoneHistory::class => MockResponse::make($body)])->domain()->zone('example.com');
+
+    expect(fn () => $zone->history())->toThrow(UnexpectedValueException::class, $message);
+})->with([
+    'an object' => [['date' => '2026-10-08T09:28:33+02:00'], 'OVH zone history response is not a list.'],
+    'a timestamp' => [[1700000000], 'OVH zone history response holds a value that is not a string.'],
+    'a value that is not a date' => [['yesterday at noon'], 'OVH date value "yesterday at noon" cannot be parsed.'],
+]);
