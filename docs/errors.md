@@ -16,7 +16,7 @@ All of them live in `OvhSdk\Exceptions` and extend `OvhSdk\Exceptions\OvhExcepti
 | Status | Exception | Meaning |
 |---|---|---|
 | 400 | `BadRequestException` | the request is malformed or invalid |
-| 401 | `AuthenticationException` | credentials are missing, invalid or expired |
+| 401 | `AuthenticationException` | credentials are missing, invalid or expired; wrong application keys are answered with a 403 or a 400 instead (see "Wrong application keys" below) |
 | 403 | `ForbiddenException` | the credentials are not granted for this request |
 | 404 | `NotFoundException` | the resource does not exist |
 | 409 | `ConflictException` | the request conflicts with the current state of the resource |
@@ -58,7 +58,7 @@ try {
 } catch (NotFoundException) {
     $domain = null;
 } catch (ForbiddenException $exception) {
-    // Missing access rule or IAM action.
+    // Missing access rule or IAM action, or unknown consumer key.
     throw $exception;
 } catch (OvhException $exception) {
     $logger->error($exception->getMessage(), [
@@ -78,6 +78,17 @@ try {
 ### OAuth2 token errors
 
 The token request of a service account goes through the same connector, so its errors are `OvhException`s too, with one difference: a `400` or a `401` from the token endpoint throws an `AuthenticationException`. For wrong client credentials, OVHcloud answers `400` with a body like `{"error": "invalid_client"}`, the OAuth2 error format (RFC 6749, section 5.2): the result is an `AuthenticationException` whose message is the `error_description` field of the body, or else its `error` field, here `invalid_client`. A token response without `access_token` or `expires_in` throws a `RuntimeException`.
+
+### Wrong application keys
+
+With application keys, OVHcloud does not answer wrong credentials with a `401`, so they never throw an `AuthenticationException`. Observed on real responses:
+
+| Case | Status | Exception | `errorClass` | Message |
+|---|---|---|---|---|
+| unknown consumer key | 403 | `ForbiddenException` | `Client::Forbidden` | `This credential does not exist` |
+| wrong application secret | 400 | `BadRequestException` | `Client::BadRequest` | `Invalid signature` |
+
+OVHcloud does not document these messages, so the SDK types these responses by their status only. To tell a credential problem from a missing access right or a malformed request, read `getMessage()`.
 
 Other exceptions
 ----------------

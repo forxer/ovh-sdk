@@ -33,7 +33,7 @@ Zones
 | Property | Type | Content |
 |---|---|---|
 | `name` | `string` | zone name |
-| `nameServers` | `list<string>` | name servers hosting the zone |
+| `nameServers` | `list<string>` | name servers OVHcloud lists for the zone; the list can hold a server that is not authoritative for the zone, so query the `NS` records when you need the servers actually serving it |
 | `lastUpdate` | `?DateTimeImmutable` | last update of the zone |
 | `dnssecSupported` | `bool` | DNSSEC is supported by the zone |
 | `dnssecActivated` | `bool` | DNSSEC is activated for the zone |
@@ -82,7 +82,7 @@ $record = $records->create(
 $record->id;   // int, to update or delete the record later
 ```
 
-A `null` sub-domain or TTL is not sent: without a sub-domain, the record is created at the zone root.
+A `null` sub-domain or TTL is not sent: without a sub-domain, the record is created at the zone root; without a TTL, OVHcloud stores a TTL of `0` and the default TTL of the zone applies.
 
 ### Updating
 
@@ -91,7 +91,7 @@ $records->update($record->id, target: '203.0.113.20');
 $records->update($record->id, subDomain: '');   // moves the record to the zone root
 ```
 
-Only the arguments that are not `null` are sent, so `null` means "unchanged". An empty string is sent as is: `subDomain: ''` targets the zone root. A call without any field throws an `InvalidArgumentException` before anything is sent. As `null` means "unchanged", `update()` cannot reset a TTL to `null`.
+Only the arguments that are not `null` are sent, so `null` means "unchanged". An empty string is sent as is: `subDomain: ''` targets the zone root. A call without any field throws an `InvalidArgumentException` before anything is sent. As `null` means "unchanged", `update()` never sends a `null` TTL.
 
 ### Deleting
 
@@ -109,8 +109,8 @@ $records->delete($record->id);
 | `zone` | `string` | zone name |
 | `subDomain` | `?string` | sub-domain, relative to the zone; nullable as in the official schema, so check for both `null` and `''` when looking for root records |
 | `type` | `OvhSdk\Enums\RecordType` | record type |
-| `target` | `string` | target of the record |
-| `ttl` | `?int` | TTL, in seconds, if one is set |
+| `target` | `string` | target of the record, as OVHcloud stores it: a `TXT` target is read back between double quotes (`"v=spf1 -all"`), even when it was created without them |
+| `ttl` | `?int` | TTL, in seconds; `0`, not `null`, when the record has no TTL of its own and follows the default TTL of the zone. Nullable as in the official schema |
 
 ### RecordType
 
