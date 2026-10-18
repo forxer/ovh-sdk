@@ -1,0 +1,39 @@
+name: release
+
+on:
+  push:
+    tags: ['*.*.*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # The notes are the CHANGELOG section of the tag: from the underlined
+      # "x.y.z (date)" heading to the next underlined heading. A tag without
+      # its section fails the job rather than publishing an empty release.
+      - name: Extract the release notes
+        run: |
+          awk -v tag="$GITHUB_REF_NAME" '
+            { lines[NR] = $0 }
+            END {
+              for (i = 1; i < NR; i++) {
+                if ((lines[i] == tag || index(lines[i], tag " ") == 1) && lines[i + 1] ~ /^-+$/) { start = i + 2; break }
+              }
+              if (!start) { print "No CHANGELOG section for " tag > "/dev/stderr"; exit 1 }
+              for (j = start; j <= NR; j++) {
+                if (j < NR && lines[j] != "" && lines[j + 1] ~ /^-+$/) break
+                print lines[j]
+              }
+            }
+          ' CHANGELOG.md | sed -e '/./,$!d' | sed -e ':a' -e '/^\n*$/{$d;N;ba' -e '}' > "$RUNNER_TEMP/notes.md"
+
+      - name: Create the GitHub release
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes.md" --verify-tag
+        env:
+          GH_TOKEN: ${{ github.token }}

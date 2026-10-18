@@ -1,3 +1,8 @@
+[![Latest Stable Version](https://poser.pugx.org/forxer/ovh-sdk/v)](https://packagist.org/packages/forxer/ovh-sdk)
+[![Total Downloads](https://poser.pugx.org/forxer/ovh-sdk/downloads)](https://packagist.org/packages/forxer/ovh-sdk)
+[![License](https://poser.pugx.org/forxer/ovh-sdk/license)](https://packagist.org/packages/forxer/ovh-sdk)
+[![Tests](https://github.com/forxer/ovh-sdk/actions/workflows/tests.yml/badge.svg)](https://github.com/forxer/ovh-sdk/actions/workflows/tests.yml)
+
 OVH SDK
 =======
 
