@@ -1,6 +1,24 @@
 CHANGELOG
 =========
 
+0.4.0 (2026-10-18)
+------------------
+
+- Errors: every failure the SDK detects itself throws a dedicated exception, named after what failed, its message saying why with the values involved: `CouldNotReadResponse`, `CouldNotParseZoneFile` (with the line in `zoneFileLine`), `InvalidAccessRule`, `CouldNotSendUnknownCase`, `CouldNotUpdateRecord`, `InvalidZoneName`, `CouldNotRequestConsumerKey`, `CouldNotAuthenticateRequest` and, in Laravel, `OvhSdk\Laravel\Exceptions\InvalidConfiguration` (see the errors documentation)
+- Errors: each dedicated exception extends the SPL exception the SDK threw before (`InvalidArgumentException`, `UnexpectedValueException` or `LogicException`), so existing `catch` blocks keep working. An OAuth2 token response without `access_token` or `expires_in` now throws a `CouldNotReadResponse`, which is still a `RuntimeException`
+
+### Changed exception messages
+
+Code comparing the message of these exceptions must follow the new wording:
+
+- `AccessRule::fromString()` with an unknown method names the method and lists the known ones: `Access rule "FETCH:/domain" has an unknown HTTP method "FETCH": use one of GET, POST, PUT, PATCH, DELETE.`
+- An `Unknown` case refused before sending is named with its class, for example `OvhSdk\Enums\TaskStatus::Unknown cannot be sent to OVHcloud: it only stands for a value read from OVHcloud that this version of the SDK does not know.` The tasks no longer share one message between their two filters.
+- A record `update()` without any field names the record and its zone: `Record 42 of zone "example.com" cannot be updated without any change: pass at least one of target, subDomain or ttl.`
+- `requestConsumerKey()` on a connector without `ApplicationKeys` names the authenticator of the connector, and an authenticator of the SDK used with another connector names that connector.
+- `OVH credential response is missing consumerKey.`, without `the`.
+- `OVH OAuth2 token response is missing access_token.` (or `expires_in`), instead of `OAuth2 token response is missing ...`.
+- An empty zone name given to `ZoneFile::parse()`: `A zone file needs the name of its zone, such as "example.com", "." given.`
+
 0.3.0 (2026-10-18)
 ------------------
 

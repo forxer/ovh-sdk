@@ -19,7 +19,7 @@ Features
 - Domains: names, details (including transfer lock, DNSSEC and offer) and service information (expiration, renewal)
 - DNS zones and records: read, create, update, delete and refresh, zone status, zone file export and parsing, history of the restore points
 - Web redirections and tasks of DNS zones, read only
-- Typed exceptions for every OVHcloud error, with the OVH error class and query id
+- Typed exceptions for every OVHcloud error, with the OVH error class and query id, and a dedicated, self-explaining exception for every other failure
 - Generic access to any endpoint not covered yet, signature included
 - Framework agnostic core, optional Laravel 13 integration (configuration, facade, injection, cache, fake)
 - Testable without any real API call, with Saloon's `MockClient`
