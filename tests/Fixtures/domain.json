@@ -2,24 +2,24 @@
     "domain": "example.com",
     "expirationDate": "2027-03-14T00:00:00+01:00",
     "renewalDate": "2027-02-12T00:00:00+01:00",
-    "renewalState": "automatic_renew",
+    "renewalState": "manual_renew",
     "state": "ok",
     "suspensionState": "not_suspended",
-    "nameServerType": "hosted",
+    "nameServerType": "hosting",
     "nameServers": [
         {
             "id": 1,
             "nameServer": "dns200.anycast.me",
             "ipv4": null,
             "ipv6": null,
-            "nameServerType": "hosted"
+            "nameServerType": "hosting"
         },
         {
             "id": 2,
             "nameServer": "ns200.anycast.me",
             "ipv4": null,
             "ipv6": null,
-            "nameServerType": "hosted"
+            "nameServerType": "hosting"
         }
     ],
     "whoisOwner": "XX1234-OVH",

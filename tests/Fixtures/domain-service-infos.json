@@ -4,10 +4,10 @@
     "creation": "2019-03-14",
     "engagedUpTo": null,
     "renew": {
-        "automatic": true,
+        "automatic": false,
         "deleteAtExpiration": false,
         "forced": false,
-        "manualPayment": null,
+        "manualPayment": true,
         "period": null
     },
     "renewalType": "automaticV2016",

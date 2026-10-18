@@ -28,9 +28,10 @@ it('reads a domain', function () {
 
     expect($domain->domain)->toBe('example.com')
         ->and($domain->expirationDate)->toEqual(new DateTimeImmutable('2027-03-14T00:00:00+01:00'))
-        ->and($domain->renewalState)->toBe(RenewalState::AutomaticRenew)
+        ->and($domain->renewalState)->toBe(RenewalState::ManualRenew)
         ->and($domain->state)->toBe(DomainState::Ok)
         ->and($domain->suspensionState)->toBe(SuspensionState::NotSuspended)
+        ->and($domain->nameServerType)->toBe('hosting')
         ->and($domain->nameServers[0]->nameServer)->toBe('dns200.anycast.me')
         ->and($domain->nameServers[0]->ipv4)->toBeNull()
         ->and((string) sentRequest($ovh, GetDomain::class)->getUri())->toBe('https://api.eu.ovhcloud.com/v1/domain/example.com');
@@ -42,8 +43,8 @@ it('reads the service information of a domain', function () {
 
     expect($infos->expiration->format('Y-m-d'))->toBe('2027-03-14')
         ->and($infos->engagedUpTo)->toBeNull()
-        ->and($infos->renew->automatic)->toBeTrue()
-        ->and($infos->renew->manualPayment)->toBeNull()
+        ->and($infos->renew->automatic)->toBeFalse()
+        ->and($infos->renew->manualPayment)->toBeTrue()
         ->and($infos->renew->period)->toBeNull()
         ->and($infos->renewalType)->toBe(RenewalType::AutomaticV2016)
         ->and($infos->status)->toBe(ServiceStatus::Ok);

@@ -34,6 +34,14 @@ it('hydrates records and keeps the order', function () {
     expect(array_map(fn (Record $record) => $record->id, $ovh->domain()->zone('example.com')->records()->list()))->toBe([43, 42]);
 });
 
+it('reads a record that follows the default ttl of the zone', function () {
+    $record = ovh([GetRecord::class => MockResponse::make(fixtureData('record'))])
+        ->domain()->zone('example.com')->records()->get(42);
+
+    expect($record->subDomain)->toBe('www')
+        ->and($record->ttl)->toBe(0);
+});
+
 it('reads a root record without ttl', function () {
     $record = ovh([GetRecord::class => MockResponse::make(['subDomain' => null, 'ttl' => null] + fixtureData('record'))])
         ->domain()->zone('example.com')->records()->get(42);
@@ -45,7 +53,7 @@ it('reads a root record without ttl', function () {
 });
 
 it('creates a record', function () {
-    $ovh = ovh([CreateRecord::class => MockResponse::make(['subDomain' => 'app'] + fixtureData('record'))]);
+    $ovh = ovh([CreateRecord::class => MockResponse::make(['subDomain' => 'app', 'ttl' => 3600] + fixtureData('record'))]);
 
     $record = $ovh->domain()->zone('example.com')->records()->create(type: RecordType::A, subDomain: 'app', target: '203.0.113.10', ttl: 3600);
     $sent = sentRequest($ovh, CreateRecord::class);
