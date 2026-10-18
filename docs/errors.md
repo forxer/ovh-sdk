@@ -97,7 +97,8 @@ Not every failure is an OVHcloud error status:
 
 | Exception | When |
 |---|---|
-| `UnexpectedValueException` | a successful response does not follow the official schema: a required field is missing or of the wrong type, a list route does not return a list, a date cannot be parsed, a consumer key response has no `consumerKey`. The SDK throws rather than hydrating half a DTO |
+| `UnexpectedValueException` | a successful response does not follow the official schema: a required field is missing or of the wrong type, a list route does not return a list, a date cannot be parsed, a consumer key response has no `consumerKey`, a zone export is not a JSON string. The SDK throws rather than hydrating half a DTO |
+| `JsonException` | the body of a successful response the SDK reads is not valid JSON |
 | `InvalidArgumentException` | the SDK is misused: a malformed access rule in `AccessRule::fromString()`, `RecordType::Unknown` given to `ids()`, `list()` or `create()` of the records, `update()` without any field. In Laravel, also an incomplete or wrong configuration, the message naming the environment variable to set |
 | `LogicException` | the SDK is misused: `requestConsumerKey()` on a connector without `ApplicationKeys`, or an authenticator of the SDK used with another connector than `OvhSdk\Ovh` |
 | `RuntimeException` | an OAuth2 token response without `access_token` or `expires_in` |

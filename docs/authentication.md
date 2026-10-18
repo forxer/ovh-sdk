@@ -161,6 +161,8 @@ Every route of the SDK is in the `/v1` branch. The IAM action is the one given b
 | `domain()->zones()->ids()` | `GET /domain/zone` | `dnsZone:apiovh:get` |
 | `domain()->zones()->list()` | `GET /domain/zone`, then `GET /domain/zone/{zoneName}` per zone | `dnsZone:apiovh:get` |
 | `zone($zoneName)->get()` | `GET /domain/zone/{zoneName}` | `dnsZone:apiovh:get` |
+| `zone($zoneName)->status()` | `GET /domain/zone/{zoneName}/status` | `dnsZone:apiovh:status/get` |
+| `zone($zoneName)->export()` | `GET /domain/zone/{zoneName}/export` | `dnsZone:apiovh:export/get` |
 | `zone($zoneName)->refresh()` | `POST /domain/zone/{zoneName}/refresh` | `dnsZone:apiovh:refresh` |
 | `records()->ids()` | `GET /domain/zone/{zoneName}/record` | `dnsZone:apiovh:record/get` |
 | `records()->list()` | `GET /domain/zone/{zoneName}/record`, then `GET /domain/zone/{zoneName}/record/{id}` per record | `dnsZone:apiovh:record/get` |

@@ -26,6 +26,7 @@ $names = $ovh->domain()->ids();                         // ['example.com', 'exam
 $domain = $ovh->domain()->get('example.com');
 $domain->expirationDate;                                // DateTimeImmutable
 $domain->renewalState;                                  // OvhSdk\Enums\RenewalState
+$domain->transferLockStatus;                            // OvhSdk\Enums\TransferLockStatus
 
 $service = $ovh->domain()->serviceInfos('example.com');
 $service->expiration;                                   // DateTimeImmutable
@@ -47,7 +48,7 @@ When only a few elements are needed, prefer `ids()` followed by `get()` on the c
 Domain
 ------
 
-`OvhSdk\Data\Domain\Domain`, from the `domain.DomainService` schema, reduced to the properties below (contacts, DNSSEC, glue records, offer and IAM metadata are not kept).
+`OvhSdk\Data\Domain\Domain`, from the `domain.DomainService` schema, reduced to the properties below (contacts, glue records and IAM metadata are not kept).
 
 | Property | Type | Content |
 |---|---|---|
@@ -62,6 +63,12 @@ Domain
 | `whoisOwner` | `string` | contact id of the owner (registrant) |
 | `lastUpdate` | `DateTimeImmutable` | last update |
 | `serviceId` | `int` | service identifier |
+| `transferLockStatus` | `OvhSdk\Enums\TransferLockStatus` | transfer lock status: `Locked` when the domain cannot be transferred to another registrar |
+| `dnssecState` | `OvhSdk\Enums\DnssecState` | DNSSEC state of the domain |
+| `dnssecSupported` | `bool` | DNSSEC flag of the domain, ambiguous: see below |
+| `offer` | `OvhSdk\Enums\DomainOffer` | offer of the domain |
+
+`dnssecSupported` is ambiguous: its name says DNSSEC is supported, but the official schema describes it as "Whether DNSSEC is activated for this domain name". The SDK exposes the value as OVHcloud sends it. The domains checked while writing the SDK had DNSSEC both supported and enabled, which does not settle the question. To know whether DNSSEC is enabled, read `dnssecState`.
 
 `OvhSdk\Data\Domain\NameServer`:
 
@@ -116,6 +123,9 @@ Every enum read from OVHcloud has an `Unknown` case (value `'__unknown__'`): a v
 | `OvhSdk\Enums\DomainState` | `AutorenewInProgress` (`autorenew_in_progress`), `AutorenewRegistryInProgress` (`autorenew_registry_in_progress`), `Deleted` (`deleted`), `Dispute` (`dispute`), `Expired` (`expired`), `Ok` (`ok`), `OutgoingTransfer` (`outgoing_transfer`), `PendingCreate` (`pending_create`), `PendingDelete` (`pending_delete`), `PendingIncomingTransfer` (`pending_incoming_transfer`), `PendingInstallation` (`pending_installation`), `RegistrySuspended` (`registry_suspended`), `Restorable` (`restorable`), `TechnicalSuspended` (`technical_suspended`), `Unknown` |
 | `OvhSdk\Enums\RenewalState` | `AutomaticRenew` (`automatic_renew`), `CancellationComplete` (`cancellation_complete`), `CancellationRequested` (`cancellation_requested`), `ManualRenew` (`manual_renew`), `Unpaid` (`unpaid`), `Unknown` |
 | `OvhSdk\Enums\SuspensionState` | `NotSuspended` (`not_suspended`), `Suspended` (`suspended`), `Unknown` |
+| `OvhSdk\Enums\TransferLockStatus` | `Locked` (`locked`), `Locking` (`locking`), `Unavailable` (`unavailable`), `Unlocked` (`unlocked`), `Unlocking` (`unlocking`), `Unknown` |
+| `OvhSdk\Enums\DnssecState` | `Disabled` (`disabled`), `Enabled` (`enabled`), `NotSupported` (`not_supported`), `Unknown` |
+| `OvhSdk\Enums\DomainOffer` | `Diamond` (`diamond`), `Gold` (`gold`), `Platinum` (`platinum`), `Unknown` |
 | `OvhSdk\Enums\RenewalType` | `AutomaticForcedProduct` (`automaticForcedProduct`), `AutomaticV2012` (`automaticV2012`), `AutomaticV2014` (`automaticV2014`), `AutomaticV2016` (`automaticV2016`), `Manual` (`manual`), `OneShot` (`oneShot`), `Option` (`option`), `Unknown` |
 | `OvhSdk\Enums\ServiceStatus` | `AutorenewInProgress` (`autorenewInProgress`), `Expired` (`expired`), `InCreation` (`inCreation`), `Ok` (`ok`), `PendingDebt` (`pendingDebt`), `UnPaid` (`unPaid`), `Unknown` |
 

@@ -84,6 +84,8 @@ Each method sends the following request classes, all in `OvhSdk\Requests`:
 | `domain()->zones()->ids()` | `Dns\ListZones` |
 | `domain()->zones()->list()` | `Dns\ListZones`, then `Dns\GetZone` per zone |
 | `zone()->get()` | `Dns\GetZone` |
+| `zone()->status()` | `Dns\GetZoneStatus` |
+| `zone()->export()` | `Dns\ExportZone` |
 | `zone()->refresh()` | `Dns\RefreshZone` |
 | `records()->ids()` | `Dns\ListRecords` |
 | `records()->list()` | `Dns\ListRecords`, then `Dns\GetRecord` per record |

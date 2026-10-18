@@ -19,6 +19,8 @@ Zones
 | `zones()->ids()` | `list<string>`: zone names | `GET /domain/zone`, one call |
 | `zones()->list()` | `list<OvhSdk\Data\Dns\Zone>` | `GET /domain/zone`, then `GET /domain/zone/{zoneName}` per zone |
 | `zone($zoneName)->get()` | `OvhSdk\Data\Dns\Zone` | `GET /domain/zone/{zoneName}` |
+| `zone($zoneName)->status()` | `OvhSdk\Data\Dns\ZoneStatus` | `GET /domain/zone/{zoneName}/status` |
+| `zone($zoneName)->export()` | `string`: the zone file, in BIND format | `GET /domain/zone/{zoneName}/export` |
 | `zone($zoneName)->refresh()` | `void` | `POST /domain/zone/{zoneName}/refresh` |
 | `zone($zoneName)->records()` | `OvhSdk\Resources\RecordsResource` | none |
 
@@ -38,6 +40,33 @@ Zones
 | `dnssecSupported` | `bool` | DNSSEC is supported by the zone |
 | `dnssecActivated` | `bool` | DNSSEC is activated for the zone |
 | `hasDnsAnycast` | `bool` | the zone has a DNS Anycast subscription |
+
+### ZoneStatus
+
+`OvhSdk\Data\Dns\ZoneStatus`, from the `domain.zone.Status` schema, plus `lastRefresh`, which OVHcloud sends but the schema does not declare.
+
+```php
+$status = $ovh->domain()->zone('example.com')->status();
+
+$status->isDeployed;                    // bool
+$status->errors;                        // ?list<string>, [] when the zone has none
+$status->lastRefresh;                   // ?DateTimeImmutable
+```
+
+| Property | Type | Content |
+|---|---|---|
+| `isDeployed` | `bool` | the zone is deployed |
+| `errors` | `?list<string>` | errors of the zone; OVHcloud sends an empty list when there is none, `null` is kept as in the official schema |
+| `warnings` | `?list<string>` | warnings of the zone, as `errors` |
+| `lastRefresh` | `?DateTimeImmutable` | last refresh of the zone, with its microseconds and the offset sent by OVHcloud; `null` when the response does not hold it, as the schema does not guarantee it |
+
+### Zone file
+
+```php
+$zoneFile = $ovh->domain()->zone('example.com')->export();
+```
+
+`export()` returns the whole zone as a BIND zone file, as OVHcloud generates it, in a single call whatever the number of records. To read every record of a zone, it is much cheaper than `records()->list()`, which makes one call per record; the SDK does not parse the file, though.
 
 Records
 -------
