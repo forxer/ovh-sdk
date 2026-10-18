@@ -1,6 +1,24 @@
 CHANGELOG
 =========
 
+0.5.0 (2026-10-18)
+------------------
+
+- DNS zones: `tasks()->ids()` and `tasks()->list()` refuse `TaskStatus::Problem` as a filter before sending, with a `CouldNotFilterZoneTasks` (an `InvalidArgumentException`): OVHcloud answers `status=problem` with a 400 `Invalid inputs`, although its schema lists the value. A task read from OVHcloud can still have this status (see the DNS zones documentation)
+- Errors: a successful response whose body is not JSON, an empty body included, throws a `CouldNotDecodeResponse`, a subclass of `CouldNotReadResponse` holding the `JsonException` as previous exception. JSON of the wrong shape, such as a string where a list or an object is expected, throws a `CouldNotReadResponse`. Catch `CouldNotDecodeResponse` first to retry the first case only (see the errors documentation)
+- Authentication: a server time (`GET /auth/time`) that is not a JSON integer throws instead of being read as `0`, which gave a wrong time delta, cached for an hour, and failed the signature of every request
+- Contributors: the live suite sends each task status as a filter, and checks that OVHcloud still refuses `problem`
+
+### Changed exceptions
+
+Code catching these failures must catch the new exceptions:
+
+- A successful response whose body is not valid JSON threw a `JsonException`. It now throws an `OvhSdk\Exceptions\CouldNotDecodeResponse`, which is not a `JsonException`: replace `catch (JsonException)` with `catch (CouldNotDecodeResponse)`. The `JsonException` stays available through `getPrevious()`.
+- A successful response holding a JSON scalar where an object or a list is expected threw a `TypeError` (`Cannot assign string to property Saloon\Http\Response::$decodedJson of type array`). It now throws a `CouldNotReadResponse`.
+- An empty body on a list route was read as an empty list. It now throws a `CouldNotDecodeResponse`.
+- An object route answering a JSON list throws a `CouldNotReadResponse` saying that the response is not an object, instead of naming the first missing field.
+- `TaskStatus::Problem` given to `tasks()->ids()` or `tasks()->list()` was sent, and OVHcloud answered with a `BadRequestException`. It now throws a `CouldNotFilterZoneTasks` before sending.
+
 0.4.0 (2026-10-18)
 ------------------
 
