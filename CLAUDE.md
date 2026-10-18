@@ -13,7 +13,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 composer check
 
 # Individual commands
-composer test       # Run tests (Pest)
+composer test       # Run tests (Pest), without the live suite
+composer test:live  # Run the live suite against the real API (needs .env, see docs/testing.md)
 composer lint       # Check code style (Pint)
 composer fix        # Fix code style
 composer analyse    # Static analysis (PHPStan level max, src only)
@@ -48,8 +49,9 @@ Use `https://docs.ovhcloud.com` and its local copy in `reference/` (`reference/d
 
 ## Tests
 
-- Pest 5, no real API call: Saloon `MockClient` everywhere.
-- Helpers in `tests/Pest.php`: `ovh()` (connector with a `MockClient`, a `NullAuthenticator` and a frozen clock by default), `sentRequest()` (last pending request of a class) and `fixtureData()` (decoded JSON from `tests/Fixtures/`; named so because Pest already owns a global `fixture()` returning a path). Doubles in `tests/Support/` (`ArrayCache`, `FrozenClock`).
+- Pest 5, no real API call: Saloon `MockClient` everywhere, except in `tests/Live`.
+- `tests/Live` (testsuite `Live`, outside `defaultTestSuite`, run only by `composer test:live`) reads the real API through `Tests\Support\LiveApi`, configured by the git ignored `.env` (see `.env.example`). `LiveApi` refuses a consumer key that is not read only or reaches `authInfo`, and its middleware refuses anything but a GET on the routes of the test domain: widen `LiveApi::guard()` and `LiveApi::accessRules()` together when a live test needs a new route, never towards a write. Live tests check shapes and `Unknown` enums, never values.
+- Helpers in `tests/Pest.php`: `ovh()` (connector with a `MockClient`, a `NullAuthenticator` and a frozen clock by default), `sentRequest()` (last pending request of a class) and `fixtureData()` (decoded JSON from `tests/Fixtures/`; named so because Pest already owns a global `fixture()` returning a path). Doubles in `tests/Support/` (`ArrayCache`, `FrozenClock`), plus `LiveApi` for the live suite.
 - Fixtures in `tests/Fixtures/` follow the models of the official schema. Laravel tests live in `tests/Laravel/` and run on Orchestra Testbench.
 
 ## Code Style

@@ -212,3 +212,36 @@ Ovh::clearResolvedInstances();
 
 Ovh::fake([ListDomains::class => MockResponse::make(['example.com'])]);
 ```
+
+Testing the SDK against the real API
+------------------------------------
+
+This section is for the contributors of the SDK. Its own tests run on fixtures, without any call to OVHcloud. A separate suite, `tests/Live`, reads the real API to check that the SDK still understands its responses: it never runs in `composer test`, `composer check` or the CI, only on demand.
+
+```bash
+composer test:live
+```
+
+### Setting it up
+
+1. Copy `.env.example` to `.env` (git ignores it), then set `OVH_APPLICATION_KEY`, `OVH_APPLICATION_SECRET` and `OVH_LIVE_DOMAIN`, a domain of the account whose DNS zone is hosted by OVHcloud.
+2. Request a consumer key restricted to this domain, in read only:
+
+   ```bash
+   php tests/Live/consumer-key.php
+   ```
+
+3. Validate the key at the printed URL, choosing its validity, then set `OVH_CONSUMER_KEY` in `.env`.
+
+A variable of the environment takes precedence over `.env`. Without the four variables, the live tests are skipped.
+
+The key gets `GET` access to the routes the live tests read, and nothing else: `/auth/currentCredential`, the domain and zone lists, the test domain and its service information, and the test zone with everything below it. The transfer code of the domain (`GET /domain/{serviceName}/authInfo`) stays out of reach.
+
+### Safeguards
+
+- Before any other request, the suite reads the rules of the consumer key (`GET /auth/currentCredential`) and refuses to go on when one of them is not a `GET`, or reaches the transfer code of the test domain. Never reuse the consumer key of an application, which can usually write.
+- Every request goes through a middleware that refuses, before sending, anything but a `GET` on the routes above.
+
+### What it checks
+
+The live tests check the shape of the responses, not their values, which change over time: every response is hydrated, and no enum is read as `Unknown`. A failure on an enum means OVHcloud sends a value this version of the SDK does not know yet.
