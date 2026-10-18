@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+0.3.0 (2026-10-18)
+------------------
+
+- DNS zones: `ZoneFile::parse()` splits a BIND zone file into records (`ZoneFileRecord`: sub-domain, TTL, type and target) and reads its default TTL, without the SOA record; `zone()->exportedRecords()` splits the export of a zone, reading every record in a single call
+- DNS zones: `zone()->history()` reads the creation dates of the restore points of a zone, oldest first, optionally between two dates
+- DNS zones: `zone()->redirections()` reads the web redirections of a zone (`ids()`, `list()`, `get()`, `Redirection`), with the new `RedirectionType` enum
+- DNS zones: `zone()->tasks()` reads the tasks of a zone (`ids()`, `list()`, `get()`, `ZoneTask`), with the new `TaskFunction` and `TaskStatus` enums
+- Contributors: `composer test:live` runs an opt-in suite against the real API, with a read only consumer key restricted to one domain (see the testing documentation)
+
 0.2.0 (2026-10-18)
 ------------------
 

@@ -36,7 +36,7 @@ $service->renew?->automatic;                            // ?bool, renew may be n
 ids() and list()
 ----------------
 
-The list routes of the `/v1` API only return identifiers. The SDK follows the same convention for domains, DNS zones and DNS records:
+The list routes of the `/v1` API only return identifiers. The SDK follows the same convention for domains, DNS zones, DNS records, web redirections and zone tasks:
 
 - `ids()` makes a single call and returns the identifiers (names for domains);
 - `list()` returns complete DTOs, at the cost of **one call per element** on top of the list call: 300 domains mean 301 calls.

@@ -37,7 +37,7 @@ Features
 
 * Fluent, typed resources returning immutable DTOs and enums
 * Application keys (signed requests) and OAuth2 service accounts
-* Domains, DNS zones and DNS records
+* Domains, DNS zones and DNS records, zone file parsing, and the history, web redirections and tasks of DNS zones
 * Typed exceptions for every OVHcloud error
 * Generic access to any endpoint not covered yet
 * Framework agnostic core, with an optional Laravel 13 integration in the same package

@@ -17,7 +17,8 @@ Features
 - Two authentication modes: application keys (signed requests, server clock synchronisation) and OAuth2 service accounts
 - Consumer key requests, from PHP or from an artisan command
 - Domains: names, details (including transfer lock, DNSSEC and offer) and service information (expiration, renewal)
-- DNS zones and records: read, create, update, delete and refresh, zone status and zone file export
+- DNS zones and records: read, create, update, delete and refresh, zone status, zone file export and parsing, history of the restore points
+- Web redirections and tasks of DNS zones, read only
 - Typed exceptions for every OVHcloud error, with the OVH error class and query id
 - Generic access to any endpoint not covered yet, signature included
 - Framework agnostic core, optional Laravel 13 integration (configuration, facade, injection, cache, fake)
@@ -71,6 +72,8 @@ $zone = $ovh->domain()->zone('example.com');
 $zone->get();                                            // Zone
 $zone->status();                                         // ZoneStatus
 $zone->export();                                         // string, the BIND zone file in one call
+$zone->exportedRecords();                                // list<ZoneFileRecord>, the records of the zone file in one call
+$zone->history();                                        // list<DateTimeImmutable>, the restore points, oldest first
 $zone->refresh();                                        // applies the pending changes
 
 $zone->records()->ids();                                 // list<int>, one call
@@ -79,6 +82,9 @@ $zone->records()->get(42);                               // Record
 $zone->records()->create(RecordType::A, '203.0.113.10', 'app');
 $zone->records()->update(42, target: '203.0.113.20');
 $zone->records()->delete(42);
+
+$zone->redirections()->list();                           // list<Redirection>, the list call plus one per redirection
+$zone->tasks()->list();                                  // list<ZoneTask>, the list call plus one per task
 ```
 
 ### Calling an endpoint not covered yet
@@ -108,7 +114,7 @@ Contents
 - [Installation](./installation.md): requirements, Composer, connector, regions, cache and clock
 - [Authentication](./authentication.md): application keys, consumer keys, service accounts, IAM actions
 - [Domains](./domains.md): domain names, details and service information
-- [DNS zones](./dns-zones.md): zones and records
+- [DNS zones](./dns-zones.md): zones, zone file, history, records, web redirections and tasks
 - [Errors](./errors.md): exceptions by HTTP status and other failures
 - [Laravel](./laravel.md): configuration, facade, injection, cache and artisan command
 - [Testing](./testing.md): `MockClient` and `Ovh::fake()`

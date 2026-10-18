@@ -85,7 +85,8 @@ Each method sends the following request classes, all in `OvhSdk\Requests`:
 | `domain()->zones()->list()` | `Dns\ListZones`, then `Dns\GetZone` per zone |
 | `zone()->get()` | `Dns\GetZone` |
 | `zone()->status()` | `Dns\GetZoneStatus` |
-| `zone()->export()` | `Dns\ExportZone` |
+| `zone()->export()`, `zone()->exportedRecords()` | `Dns\ExportZone` |
+| `zone()->history()` | `Dns\ListZoneHistory` |
 | `zone()->refresh()` | `Dns\RefreshZone` |
 | `records()->ids()` | `Dns\ListRecords` |
 | `records()->list()` | `Dns\ListRecords`, then `Dns\GetRecord` per record |
@@ -93,6 +94,12 @@ Each method sends the following request classes, all in `OvhSdk\Requests`:
 | `records()->create()` | `Dns\CreateRecord` |
 | `records()->update()` | `Dns\UpdateRecord` |
 | `records()->delete()` | `Dns\DeleteRecord` |
+| `redirections()->ids()` | `Dns\ListRedirections` |
+| `redirections()->list()` | `Dns\ListRedirections`, then `Dns\GetRedirection` per redirection |
+| `redirections()->get()` | `Dns\GetRedirection` |
+| `tasks()->ids()` | `Dns\ListZoneTasks` |
+| `tasks()->list()` | `Dns\ListZoneTasks`, then `Dns\GetZoneTask` per task |
+| `tasks()->get()` | `Dns\GetZoneTask` |
 | `requestConsumerKey()` | `Auth\RequestCredential` |
 | `get()`, `post()`, `put()`, `delete()` | `Generic\GenericRequest`, or `Generic\GenericJsonRequest` for a non empty body |
 | clock synchronisation | `Auth\GetServerTime` |
@@ -245,3 +252,5 @@ The key gets `GET` access to the routes the live tests read, and nothing else: `
 ### What it checks
 
 The live tests check the shape of the responses, not their values, which change over time: every response is hydrated, and no enum is read as `Unknown`. A failure on an enum means OVHcloud sends a value this version of the SDK does not know yet.
+
+They also check that the zone file and the record API agree: the export of the test zone splits into as many records as `records()->ids()` returns, with the same types once `DKIM`, `DMARC` and `SPF` are counted as `TXT` (see [DNS zones](./dns-zones.md)), and the history accepts its own dates as bounds.
