@@ -27,6 +27,7 @@
     "serviceId": 123456,
     "offer": "gold",
     "dnssecState": "disabled",
+    "dnssecSupported": true,
     "transferLockStatus": "locked",
     "owoSupported": true,
     "iam": {

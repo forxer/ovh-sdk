@@ -3,11 +3,14 @@
 declare(strict_types=1);
 
 use OvhSdk\Data\Domain\Domain;
+use OvhSdk\Enums\DnssecState;
+use OvhSdk\Enums\DomainOffer;
 use OvhSdk\Enums\DomainState;
 use OvhSdk\Enums\RenewalState;
 use OvhSdk\Enums\RenewalType;
 use OvhSdk\Enums\ServiceStatus;
 use OvhSdk\Enums\SuspensionState;
+use OvhSdk\Enums\TransferLockStatus;
 use OvhSdk\Exceptions\NotFoundException;
 use OvhSdk\Requests\Domain\GetDomain;
 use OvhSdk\Requests\Domain\GetDomainServiceInfos;
@@ -35,6 +38,15 @@ it('reads a domain', function () {
         ->and($domain->nameServers[0]->nameServer)->toBe('dns200.anycast.me')
         ->and($domain->nameServers[0]->ipv4)->toBeNull()
         ->and((string) sentRequest($ovh, GetDomain::class)->getUri())->toBe('https://api.eu.ovhcloud.com/v1/domain/example.com');
+});
+
+it('reads the transfer lock, DNSSEC and offer of a domain', function () {
+    $domain = ovh([GetDomain::class => MockResponse::make(fixtureData('domain'))])->domain()->get('example.com');
+
+    expect($domain->transferLockStatus)->toBe(TransferLockStatus::Locked)
+        ->and($domain->dnssecState)->toBe(DnssecState::Disabled)
+        ->and($domain->dnssecSupported)->toBeTrue()
+        ->and($domain->offer)->toBe(DomainOffer::Gold);
 });
 
 it('reads the service information of a domain', function () {
@@ -85,4 +97,21 @@ it('maps an unknown domain state to Unknown', function () {
         ->domain()->get('example.com');
 
     expect($domain->state)->toBe(DomainState::Unknown);
+});
+
+it('maps unknown transfer lock, DNSSEC and offer values to Unknown', function () {
+    $domain = ovh([GetDomain::class => MockResponse::make(
+        ['transferLockStatus' => 'frozen', 'dnssecState' => 'pending', 'offer' => 'silver'] + fixtureData('domain'),
+    )])->domain()->get('example.com');
+
+    expect($domain->transferLockStatus)->toBe(TransferLockStatus::Unknown)
+        ->and($domain->dnssecState)->toBe(DnssecState::Unknown)
+        ->and($domain->offer)->toBe(DomainOffer::Unknown);
+});
+
+it('refuses a domain without the DNSSEC support flag', function () {
+    $domains = ovh([GetDomain::class => MockResponse::make(array_diff_key(fixtureData('domain'), ['dnssecSupported' => true]))])->domain();
+
+    expect(fn () => $domains->get('example.com'))
+        ->toThrow(UnexpectedValueException::class, 'OVH response field "dnssecSupported" must be a boolean.');
 });
