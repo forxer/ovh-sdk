@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use OvhSdk\Data\Dns\Zone;
+use OvhSdk\Data\Dns\ZoneFileRecord;
+use OvhSdk\Enums\RecordType;
 use OvhSdk\Requests\Dns\ExportZone;
 use OvhSdk\Requests\Dns\GetZone;
 use OvhSdk\Requests\Dns\GetZoneStatus;
@@ -108,4 +110,14 @@ it('refuses a zone export that is not a JSON string', function () {
     $zone = ovh([ExportZone::class => MockResponse::make(['$TTL 3600'])])->domain()->zone('example.com');
 
     expect(fn () => $zone->export())->toThrow(UnexpectedValueException::class, 'OVH zone export response is not a string.');
+});
+
+it('splits the export of a zone into records, in a single call', function () {
+    $ovh = ovh([ExportZone::class => MockResponse::make(json_encode((string) file_get_contents(fixture('zone-export.txt')), JSON_THROW_ON_ERROR))]);
+    $records = $ovh->domain()->zone('example.com')->exportedRecords();
+
+    expect($records)->toHaveCount(7)
+        ->and($records[0])->toEqual(new ZoneFileRecord('', null, RecordType::NS, 'dns200.anycast.me.'))
+        ->and($records[6])->toEqual(new ZoneFileRecord('app', 3600, RecordType::CNAME, 'www.example.com.'));
+    $ovh->getMockClient()->assertSentCount(1);
 });

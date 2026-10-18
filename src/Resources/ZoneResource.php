@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace OvhSdk\Resources;
 
 use OvhSdk\Data\Dns\Zone;
+use OvhSdk\Data\Dns\ZoneFile;
+use OvhSdk\Data\Dns\ZoneFileRecord;
 use OvhSdk\Data\Dns\ZoneStatus;
 use OvhSdk\Requests\Dns\ExportZone;
 use OvhSdk\Requests\Dns\GetZone;
 use OvhSdk\Requests\Dns\GetZoneStatus;
 use OvhSdk\Requests\Dns\RefreshZone;
 use Saloon\Http\Connector;
+use UnexpectedValueException;
 
 final class ZoneResource extends Resource
 {
@@ -44,6 +47,19 @@ final class ZoneResource extends Resource
         \assert(\is_string($zoneFile));
 
         return $zoneFile;
+    }
+
+    /**
+     * Records of the zone read from its export, in a single call whatever their number. The records hold no id, and
+     * the SOA record is left out; use ZoneFile::parse() on export() to read the default TTL of the zone too.
+     *
+     * @return list<ZoneFileRecord>
+     *
+     * @throws UnexpectedValueException When the export is not a zone file the parser understands.
+     */
+    public function exportedRecords(): array
+    {
+        return ZoneFile::parse($this->export(), $this->zoneName)->records;
     }
 
     /**

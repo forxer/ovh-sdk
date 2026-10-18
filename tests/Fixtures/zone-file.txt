@@ -1,0 +1,24 @@
+; Zone file written by hand for the tests of ZoneFile::parse(), with every syntax the parser supports.
+$TTL 1h
+@                    IN SOA   dns200.anycast.me. tech.ovh.net. (
+                              2026101801 ; serial
+                              86400      ; refresh
+                              3600       ; retry
+                              3600000    ; expire
+                              60 )       ; minimum
+                     IN NS    dns200.anycast.me.
+                     IN NS    ns200.anycast.me.
+example.com.         IN MX    1 mx1.mail.ovh.net.
+                     IN MX    5 mx2.mail.ovh.net.     ; owner left blank: the zone root again
+www                  300 IN   A 203.0.113.10
+www.EXAMPLE.com.     IN 300   AAAA 2001:db8::10
+Blog                 CNAME    www                     ; neither TTL nor class
+_dmarc               IN TXT   "v=DMARC1; p=none; rua=mailto:dmarc@example.com"
+selector._domainkey  IN TXT   ( "v=DKIM1; k=rsa; "
+                                "p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA" )
+quote                IN TXT   "say \"hello\"; then leave"
+_sip._tcp            IN SRV   10 60 5060 sip.example.com.
+$ORIGIN mail
+@                    IN A     203.0.113.20
+smtp                 IN A     203.0.113.21
+info                 IN HINFO "PC" "Linux"
