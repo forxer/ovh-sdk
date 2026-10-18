@@ -6,6 +6,7 @@ namespace OvhSdk\Requests\Domain;
 
 use OvhSdk\Data\Service\ServiceInfos;
 use OvhSdk\Requests\OvhRequest;
+use OvhSdk\Support\Json;
 use Saloon\Enums\Method;
 use Saloon\Http\Response;
 
@@ -20,7 +21,7 @@ final class GetDomainServiceInfos extends OvhRequest
 
     public function createDtoFromResponse(Response $response): ServiceInfos
     {
-        return ServiceInfos::fromArray($response->json());
+        return ServiceInfos::fromArray(Json::object($response, 'domain service information'));
     }
 
     protected function path(): string

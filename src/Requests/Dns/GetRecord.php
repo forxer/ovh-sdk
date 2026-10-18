@@ -6,6 +6,7 @@ namespace OvhSdk\Requests\Dns;
 
 use OvhSdk\Data\Dns\Record;
 use OvhSdk\Requests\OvhRequest;
+use OvhSdk\Support\Json;
 use Saloon\Enums\Method;
 use Saloon\Http\Response;
 
@@ -20,7 +21,7 @@ final class GetRecord extends OvhRequest
 
     public function createDtoFromResponse(Response $response): Record
     {
-        return Record::fromArray($response->json());
+        return Record::fromArray(Json::object($response, 'record'));
     }
 
     protected function path(): string

@@ -6,6 +6,7 @@ namespace OvhSdk\Requests\Dns;
 
 use OvhSdk\Data\Dns\ZoneStatus;
 use OvhSdk\Requests\OvhRequest;
+use OvhSdk\Support\Json;
 use Saloon\Enums\Method;
 use Saloon\Http\Response;
 
@@ -20,7 +21,7 @@ final class GetZoneStatus extends OvhRequest
 
     public function createDtoFromResponse(Response $response): ZoneStatus
     {
-        return ZoneStatus::fromArray($response->json());
+        return ZoneStatus::fromArray(Json::object($response, 'zone status'));
     }
 
     protected function path(): string

@@ -9,6 +9,7 @@ use DateTimeInterface;
 use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Requests\OvhRequest;
 use OvhSdk\Support\Dates;
+use OvhSdk\Support\Json;
 use Saloon\Enums\Method;
 use Saloon\Http\Response;
 
@@ -37,11 +38,7 @@ final class ListZoneHistory extends OvhRequest
      */
     public function createDtoFromResponse(Response $response): array
     {
-        $values = $response->json();
-
-        if (! array_is_list($values)) {
-            throw CouldNotReadResponse::notAList('zone history');
-        }
+        $values = Json::list($response, 'zone history');
 
         $dates = array_map(
             static fn (mixed $value): DateTimeImmutable => \is_string($value)

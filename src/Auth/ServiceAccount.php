@@ -8,6 +8,7 @@ use OvhSdk\Exceptions\CouldNotAuthenticateRequest;
 use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Ovh;
 use OvhSdk\Requests\Auth\GetOAuth2Token;
+use OvhSdk\Support\Json;
 use Saloon\Contracts\Authenticator;
 use Saloon\Http\PendingRequest;
 
@@ -64,8 +65,9 @@ final class ServiceAccount implements Authenticator
         }
 
         $response = $ovh->send(new GetOAuth2Token($ovh->region->oauth2TokenUrl(), $this->clientId, $this->clientSecret));
-        $accessToken = $response->json('access_token');
-        $expiresIn = $response->json('expires_in');
+        $body = Json::object($response, 'OAuth2 token');
+        $accessToken = $body['access_token'] ?? null;
+        $expiresIn = $body['expires_in'] ?? null;
 
         if (! \is_string($accessToken) || $accessToken === '') {
             throw CouldNotReadResponse::missingField('OAuth2 token', 'access_token');

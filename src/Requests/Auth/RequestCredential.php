@@ -7,6 +7,7 @@ namespace OvhSdk\Requests\Auth;
 use OvhSdk\Data\Auth\AccessRule;
 use OvhSdk\Data\Auth\CredentialRequest;
 use OvhSdk\Requests\OvhRequest;
+use OvhSdk\Support\Json;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Response;
@@ -28,10 +29,7 @@ final class RequestCredential extends OvhRequest implements HasBody
 
     public function createDtoFromResponse(Response $response): CredentialRequest
     {
-        /** @var array<array-key, mixed> $data */
-        $data = $response->json();
-
-        return CredentialRequest::fromArray($data);
+        return CredentialRequest::fromArray(Json::object($response, 'credential'));
     }
 
     protected function path(): string

@@ -6,6 +6,7 @@ namespace OvhSdk\Requests\Dns;
 
 use OvhSdk\Data\Dns\Redirection;
 use OvhSdk\Requests\OvhRequest;
+use OvhSdk\Support\Json;
 use Saloon\Enums\Method;
 use Saloon\Http\Response;
 
@@ -20,7 +21,7 @@ final class GetRedirection extends OvhRequest
 
     public function createDtoFromResponse(Response $response): Redirection
     {
-        return Redirection::fromArray($response->json());
+        return Redirection::fromArray(Json::object($response, 'redirection'));
     }
 
     protected function path(): string

@@ -6,6 +6,7 @@ namespace OvhSdk\Requests\Dns;
 
 use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Requests\OvhRequest;
+use OvhSdk\Support\Json;
 use Saloon\Enums\Method;
 use Saloon\Http\Response;
 
@@ -23,11 +24,7 @@ final class ListZones extends OvhRequest
      */
     public function createDtoFromResponse(Response $response): array
     {
-        $names = $response->json();
-
-        if (! array_is_list($names)) {
-            throw CouldNotReadResponse::notAList('zone list');
-        }
+        $names = Json::list($response, 'zone list');
 
         return array_map(
             static fn (mixed $name): string => \is_string($name) ? $name : throw CouldNotReadResponse::invalidListItem('zone list', 'a string'),

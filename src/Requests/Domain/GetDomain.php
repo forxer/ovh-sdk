@@ -6,6 +6,7 @@ namespace OvhSdk\Requests\Domain;
 
 use OvhSdk\Data\Domain\Domain;
 use OvhSdk\Requests\OvhRequest;
+use OvhSdk\Support\Json;
 use Saloon\Enums\Method;
 use Saloon\Http\Response;
 
@@ -20,7 +21,7 @@ final class GetDomain extends OvhRequest
 
     public function createDtoFromResponse(Response $response): Domain
     {
-        return Domain::fromArray($response->json());
+        return Domain::fromArray(Json::object($response, 'domain'));
     }
 
     protected function path(): string

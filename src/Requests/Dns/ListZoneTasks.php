@@ -8,6 +8,7 @@ use OvhSdk\Enums\TaskFunction;
 use OvhSdk\Enums\TaskStatus;
 use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Requests\OvhRequest;
+use OvhSdk\Support\Json;
 use Saloon\Enums\Method;
 use Saloon\Http\Response;
 
@@ -31,11 +32,7 @@ final class ListZoneTasks extends OvhRequest
      */
     public function createDtoFromResponse(Response $response): array
     {
-        $ids = $response->json();
-
-        if (! array_is_list($ids)) {
-            throw CouldNotReadResponse::notAList('zone task list');
-        }
+        $ids = Json::list($response, 'zone task list');
 
         return array_map(
             static fn (mixed $id): int => \is_int($id) ? $id : throw CouldNotReadResponse::invalidListItem('zone task list', 'an integer'),

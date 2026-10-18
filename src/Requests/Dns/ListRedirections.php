@@ -6,6 +6,7 @@ namespace OvhSdk\Requests\Dns;
 
 use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Requests\OvhRequest;
+use OvhSdk\Support\Json;
 use Saloon\Enums\Method;
 use Saloon\Http\Response;
 
@@ -25,11 +26,7 @@ final class ListRedirections extends OvhRequest
      */
     public function createDtoFromResponse(Response $response): array
     {
-        $ids = $response->json();
-
-        if (! array_is_list($ids)) {
-            throw CouldNotReadResponse::notAList('redirection list');
-        }
+        $ids = Json::list($response, 'redirection list');
 
         return array_map(
             static fn (mixed $id): int => \is_int($id) ? $id : throw CouldNotReadResponse::invalidListItem('redirection list', 'an integer'),

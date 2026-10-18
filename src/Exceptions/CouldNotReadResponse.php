@@ -9,8 +9,10 @@ use UnexpectedValueException;
 
 /**
  * A successful OVHcloud response does not follow the official schema: the SDK throws rather than hydrating half a DTO.
+ *
+ * Not final: CouldNotDecodeResponse extends it for a body that is not JSON at all.
  */
-final class CouldNotReadResponse extends UnexpectedValueException
+class CouldNotReadResponse extends UnexpectedValueException
 {
     /**
      * @param  string  $expected  what the field must hold, such as "a string" or "an integer or null"
@@ -37,6 +39,14 @@ final class CouldNotReadResponse extends UnexpectedValueException
     }
 
     /**
+     * @param  string  $response  the response, such as "zone"
+     */
+    public static function notAnObject(string $response): self
+    {
+        return new self(\sprintf('OVH %s response is not an object.', $response));
+    }
+
+    /**
      * @param  string  $response  the response, such as "zone list"
      * @param  string  $expected  what each value must be, such as "a string"
      */
@@ -51,6 +61,14 @@ final class CouldNotReadResponse extends UnexpectedValueException
     public static function notAString(string $response): self
     {
         return new self(\sprintf('OVH %s response is not a string.', $response));
+    }
+
+    /**
+     * @param  string  $response  the response, such as "server time"
+     */
+    public static function notAnInteger(string $response): self
+    {
+        return new self(\sprintf('OVH %s response is not an integer.', $response));
     }
 
     public static function emptyDate(): self

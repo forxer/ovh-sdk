@@ -7,6 +7,7 @@ namespace OvhSdk\Requests\Dns;
 use OvhSdk\Enums\RecordType;
 use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Requests\OvhRequest;
+use OvhSdk\Support\Json;
 use Saloon\Enums\Method;
 use Saloon\Http\Response;
 
@@ -30,11 +31,7 @@ final class ListRecords extends OvhRequest
      */
     public function createDtoFromResponse(Response $response): array
     {
-        $ids = $response->json();
-
-        if (! array_is_list($ids)) {
-            throw CouldNotReadResponse::notAList('record list');
-        }
+        $ids = Json::list($response, 'record list');
 
         return array_map(
             static fn (mixed $id): int => \is_int($id) ? $id : throw CouldNotReadResponse::invalidListItem('record list', 'an integer'),

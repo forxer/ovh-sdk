@@ -6,6 +6,7 @@ use OvhSdk\Exceptions\AuthenticationException;
 use OvhSdk\Exceptions\BadRequestException;
 use OvhSdk\Exceptions\ConflictException;
 use OvhSdk\Exceptions\CouldNotAuthenticateRequest;
+use OvhSdk\Exceptions\CouldNotDecodeResponse;
 use OvhSdk\Exceptions\CouldNotFilterZoneTasks;
 use OvhSdk\Exceptions\CouldNotParseZoneFile;
 use OvhSdk\Exceptions\CouldNotReadResponse;
@@ -73,6 +74,8 @@ it('keeps the SPL parent of the exception it replaced', function (string $except
     [CouldNotParseZoneFile::class, UnexpectedValueException::class],
     [CouldNotReadResponse::class, UnexpectedValueException::class],
     [CouldNotReadResponse::class, RuntimeException::class],
+    [CouldNotDecodeResponse::class, CouldNotReadResponse::class],
+    [CouldNotDecodeResponse::class, UnexpectedValueException::class],
     [CouldNotRequestConsumerKey::class, LogicException::class],
     [CouldNotAuthenticateRequest::class, LogicException::class],
 ]);
