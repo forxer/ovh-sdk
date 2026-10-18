@@ -103,6 +103,7 @@ Each one extends a standard SPL exception, so a `catch (InvalidArgumentException
 | `CouldNotParseZoneFile` | `UnexpectedValueException` | a zone file that `ZoneFile::parse()` or `exportedRecords()` cannot read. The message names the line, which the `zoneFileLine` property gives too |
 | `InvalidAccessRule` | `InvalidArgumentException` | a malformed access rule in `AccessRule::fromString()`: no `:`, an unknown method (the message lists the known ones) or an empty path |
 | `CouldNotSendUnknownCase` | `InvalidArgumentException` | the `Unknown` case of an enum given to the SDK: `RecordType::Unknown` given to `ids()`, `list()` or `create()` of the records, `TaskFunction::Unknown` or `TaskStatus::Unknown` given to `ids()` or `list()` of the tasks. The message names the case |
+| `CouldNotFilterZoneTasks` | `InvalidArgumentException` | `TaskStatus::Problem` given to `ids()` or `list()` of the tasks: OVHcloud refuses this filter although its schema lists it (see [DNS zones](./dns-zones.md)). The message names the zone and the status |
 | `CouldNotUpdateRecord` | `InvalidArgumentException` | a record `update()` without any field, the message naming the record and its zone |
 | `InvalidZoneName` | `InvalidArgumentException` | an empty zone name given to `ZoneFile::parse()` |
 | `InvalidConfiguration` | `InvalidArgumentException` | in Laravel, an incomplete or wrong configuration, the message naming the environment variable to set |

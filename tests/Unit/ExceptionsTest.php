@@ -6,6 +6,7 @@ use OvhSdk\Exceptions\AuthenticationException;
 use OvhSdk\Exceptions\BadRequestException;
 use OvhSdk\Exceptions\ConflictException;
 use OvhSdk\Exceptions\CouldNotAuthenticateRequest;
+use OvhSdk\Exceptions\CouldNotFilterZoneTasks;
 use OvhSdk\Exceptions\CouldNotParseZoneFile;
 use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Exceptions\CouldNotRequestConsumerKey;
@@ -65,6 +66,7 @@ it('keeps the SPL parent of the exception it replaced', function (string $except
 })->with([
     [InvalidAccessRule::class, InvalidArgumentException::class],
     [CouldNotSendUnknownCase::class, InvalidArgumentException::class],
+    [CouldNotFilterZoneTasks::class, InvalidArgumentException::class],
     [CouldNotUpdateRecord::class, InvalidArgumentException::class],
     [InvalidZoneName::class, InvalidArgumentException::class],
     [InvalidConfiguration::class, InvalidArgumentException::class],

@@ -7,6 +7,7 @@ namespace OvhSdk\Resources;
 use OvhSdk\Data\Dns\ZoneTask;
 use OvhSdk\Enums\TaskFunction;
 use OvhSdk\Enums\TaskStatus;
+use OvhSdk\Exceptions\CouldNotFilterZoneTasks;
 use OvhSdk\Exceptions\CouldNotSendUnknownCase;
 use OvhSdk\Requests\Dns\GetZoneTask;
 use OvhSdk\Requests\Dns\ListZoneTasks;
@@ -25,6 +26,7 @@ final class ZoneTasksResource extends Resource
      * @return list<int>
      *
      * @throws CouldNotSendUnknownCase When $function or $status is the Unknown case.
+     * @throws CouldNotFilterZoneTasks When $status is TaskStatus::Problem.
      */
     public function ids(?TaskFunction $function = null, ?TaskStatus $status = null): array
     {
@@ -34,6 +36,12 @@ final class ZoneTasksResource extends Resource
 
         if ($status === TaskStatus::Unknown) {
             throw CouldNotSendUnknownCase::of($status);
+        }
+
+        // Listed by domain.TaskStatusEnum, yet answered 400 "Invalid inputs" by OVHcloud (seen on 2026-10-18, the
+        // other statuses being accepted). The live suite tells when OVHcloud accepts it.
+        if ($status === TaskStatus::Problem) {
+            throw CouldNotFilterZoneTasks::byStatus($this->zoneName, $status);
         }
 
         /** @var list<int> */
@@ -46,6 +54,7 @@ final class ZoneTasksResource extends Resource
      * @return list<ZoneTask>
      *
      * @throws CouldNotSendUnknownCase When $function or $status is the Unknown case.
+     * @throws CouldNotFilterZoneTasks When $status is TaskStatus::Problem.
      */
     public function list(?TaskFunction $function = null, ?TaskStatus $status = null): array
     {

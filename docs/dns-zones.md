@@ -322,7 +322,21 @@ $running = [
 ];
 ```
 
-`TaskFunction::Unknown` and `TaskStatus::Unknown` cannot be sent: `ids()` and `list()` throw an `OvhSdk\Exceptions\CouldNotSendUnknownCase` (an `InvalidArgumentException`) when they receive one. The SDK reads the tasks only: accelerating, cancelling or relaunching one is not covered, the `canAccelerate`, `canCancel` and `canRelaunch` flags telling what OVHcloud would allow.
+`TaskFunction::Unknown` and `TaskStatus::Unknown` cannot be sent: `ids()` and `list()` throw an `OvhSdk\Exceptions\CouldNotSendUnknownCase` (an `InvalidArgumentException`) when they receive one.
+
+`TaskStatus::Problem` cannot be used as a filter either. The official schema lists `problem` among the values of the `status` filter, but OVHcloud answers `status=problem` with a 400 `Invalid inputs` (observed in October 2026, every other status being accepted). Rather than letting the call fail, `ids()` and `list()` throw an `OvhSdk\Exceptions\CouldNotFilterZoneTasks` (an `InvalidArgumentException`) before sending it. A task read from OVHcloud can still have this status: to find these tasks, read them without a status filter and keep those in `problem`:
+
+```php
+use OvhSdk\Data\Dns\ZoneTask;
+use OvhSdk\Enums\TaskStatus;
+
+$problems = array_filter(
+    $tasks->list(),
+    fn (ZoneTask $task): bool => $task->status === TaskStatus::Problem,
+);
+```
+
+The SDK reads the tasks only: accelerating, cancelling or relaunching one is not covered, the `canAccelerate`, `canCancel` and `canRelaunch` flags telling what OVHcloud would allow.
 
 ### ZoneTask
 

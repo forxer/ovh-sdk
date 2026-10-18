@@ -254,3 +254,5 @@ The key gets `GET` access to the routes the live tests read, and nothing else: `
 The live tests check the shape of the responses, not their values, which change over time: every response is hydrated, and no enum is read as `Unknown`. A failure on an enum means OVHcloud sends a value this version of the SDK does not know yet.
 
 They also check that the zone file and the record API agree: the export of the test zone splits into as many records as `records()->ids()` returns, with the same types once `DKIM`, `DMARC` and `SPF` are counted as `TXT` (see [DNS zones](./dns-zones.md)), and the history accepts its own dates as bounds.
+
+Last, they send each task status as a filter. OVHcloud must accept every status but `problem`, which the SDK refuses before sending because OVHcloud answers it with a 400 (see [DNS zones](./dns-zones.md)). The test of `problem` sends the request without the SDK's check and expects that 400: a failure there means OVHcloud now accepts the filter, and the SDK can stop refusing it.

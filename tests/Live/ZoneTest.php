@@ -10,6 +10,8 @@ use OvhSdk\Enums\RecordType;
 use OvhSdk\Enums\RedirectionType;
 use OvhSdk\Enums\TaskFunction;
 use OvhSdk\Enums\TaskStatus;
+use OvhSdk\Exceptions\BadRequestException;
+use OvhSdk\Requests\Dns\ListZoneTasks;
 use Tests\Support\LiveApi;
 
 beforeEach(function () {
@@ -106,4 +108,17 @@ it('reads the tasks of the test zone without an unknown function or status', fun
     $tasks = LiveApi::ovh()->domain()->zone(LiveApi::domain())->tasks()->list();
 
     expect(array_filter($tasks, fn (ZoneTask $task) => $task->function === TaskFunction::Unknown || $task->status === TaskStatus::Unknown))->toBe([]);
+});
+
+it('filters the tasks of the test zone by status', function (TaskStatus $status) {
+    expect(LiveApi::ovh()->domain()->zone(LiveApi::domain())->tasks()->ids(status: $status))->toBeList()->each->toBeInt();
+})->with(array_values(array_filter(
+    TaskStatus::cases(),
+    fn (TaskStatus $status) => $status !== TaskStatus::Unknown && $status !== TaskStatus::Problem,
+)));
+
+// tasks() refuses this filter before sending: once this test fails, OVHcloud accepts it and the refusal can go.
+it('is still answered 400 by OVHcloud when filtering the tasks by the problem status', function () {
+    expect(fn () => LiveApi::ovh()->send(new ListZoneTasks(LiveApi::domain(), status: TaskStatus::Problem)))
+        ->toThrow(BadRequestException::class);
 });

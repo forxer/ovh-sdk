@@ -5,6 +5,7 @@ declare(strict_types=1);
 use OvhSdk\Data\Dns\ZoneTask;
 use OvhSdk\Enums\TaskFunction;
 use OvhSdk\Enums\TaskStatus;
+use OvhSdk\Exceptions\CouldNotFilterZoneTasks;
 use OvhSdk\Exceptions\CouldNotReadResponse;
 use OvhSdk\Exceptions\CouldNotSendUnknownCase;
 use OvhSdk\Requests\Dns\GetZoneTask;
@@ -90,6 +91,23 @@ it('refuses to filter tasks on an unknown function or status', function (?TaskFu
     'function' => [TaskFunction::Unknown, null, 'OvhSdk\\Enums\\TaskFunction::Unknown cannot be sent to OVHcloud'],
     'status' => [null, TaskStatus::Unknown, 'OvhSdk\\Enums\\TaskStatus::Unknown cannot be sent to OVHcloud'],
 ]);
+
+it('refuses to filter tasks on the problem status, which OVHcloud answers with a 400', function () {
+    $ovh = ovh([ListZoneTasks::class => MockResponse::make([42]), GetZoneTask::class => MockResponse::make(fixtureData('zone-task'))]);
+    $tasks = $ovh->domain()->zone('example.com')->tasks();
+    $message = 'Tasks of zone "example.com" cannot be filtered by OvhSdk\\Enums\\TaskStatus::Problem: OVHcloud answers 400 "Invalid inputs" to status=problem';
+
+    expect(fn () => $tasks->ids(status: TaskStatus::Problem))->toThrow(CouldNotFilterZoneTasks::class, $message)
+        ->and(fn () => $tasks->list(status: TaskStatus::Problem))->toThrow(CouldNotFilterZoneTasks::class, $message);
+    $ovh->getMockClient()->assertNothingSent();
+});
+
+it('reads a task whose status is problem', function () {
+    $task = ovh([GetZoneTask::class => MockResponse::make(['status' => 'problem'] + fixtureData('zone-task'))])
+        ->domain()->zone('example.com')->tasks()->get(42);
+
+    expect($task->status)->toBe(TaskStatus::Problem);
+});
 
 it('refuses a task that does not follow the schema', function (array $data, string $message) {
     $tasks = ovh([GetZoneTask::class => MockResponse::make($data)])->domain()->zone('example.com')->tasks();
