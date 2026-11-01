@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       # The notes are the CHANGELOG section of the tag: from the underlined
       # "x.y.z (date)" heading to the next underlined heading. A tag without
